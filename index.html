@@ -1,0 +1,2850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Book Affinity - Comunidad, Citas Literarias y Radar Cultural</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5EFEB;
+  --surface: #FCFAF8;
+  --card: #FFFFFF;
+  --card-subtle: #F6F0E8;
+  --line: #E6DCD0;
+  --ink: #1B1816;
+  --muted: #7E7469;
+  --accent: #D85A38;
+  --accent-soft: #FAEBE5;
+  --maroon: #6B1124;
+  --maroon-dark: #4F0A18;
+  --maroon-soft: #F9E6E9;
+  --gold: #D4A03D;
+  --gold-soft: #FCF4E2;
+  --parchment: #FDF9F2;
+  --ticket-bg: #FFFDF9;
+}
+:root.dark {
+  --bg: #0D1016;
+  --surface: #141822;
+  --card: #1C2230;
+  --card-subtle: #242C3E;
+  --line: #2D374D;
+  --ink: #F7FAFC;
+  --muted: #9AA7BA;
+  --accent: #E56E4D;
+  --accent-soft: #301E1A;
+  --maroon: #A11B35;
+  --maroon-dark: #781024;
+  --maroon-soft: #30141C;
+  --gold: #E5B24D;
+  --gold-soft: #2B2313;
+  --parchment: #181E2B;
+  --ticket-bg: #1B212E;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.serif { font-family: 'Playfair Display', Georgia, serif; }
+.quote { font-family: 'Newsreader', Georgia, serif; font-style: italic; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px;
+  border-radius: 9999px; font-size: 11px; font-weight: 700;
+  background: var(--card); border: 1px solid var(--line); color: var(--ink);
+  white-space: nowrap; cursor: pointer; transition: 0.15s ease;
+}
+.chip.on { background: var(--maroon); border-color: var(--maroon); color: #fff; }
+.btn {
+  background: linear-gradient(135deg, var(--maroon), #4F0A18);
+  color: #fff; font-weight: 700; font-size: 12px;
+  padding: 8px 16px; border-radius: 9999px; display: inline-flex; align-items: center;
+  justify-content: center; gap: 6px; cursor: pointer; border: none; transition: transform .1s, filter .15s;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn:active { transform: scale(0.97); }
+.btn-ghost {
+  border: 1px solid var(--line); color: var(--ink); font-weight: 700; font-size: 12px;
+  padding: 7px 14px; border-radius: 9999px; background: transparent; cursor: pointer; transition: 0.15s;
+}
+.btn-ghost:hover { border-color: var(--maroon); color: var(--maroon); }
+.icon-btn {
+  width: 38px; height: 38px; display: grid; place-items: center;
+  border-radius: 9999px; background: var(--card); border: 1px solid var(--line);
+  color: var(--ink); cursor: pointer; flex-shrink: 0; position: relative;
+  transition: transform .1s, border-color .15s;
+}
+.icon-btn:hover { border-color: var(--maroon); }
+.icon-btn:active { transform: scale(0.94); }
+.nav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 9px; font-weight: 700; color: var(--muted); background: none;
+  border: none; cursor: pointer; padding: 5px 2px; min-width: 0; flex: 1; transition: color .15s;
+}
+.nav-btn.on { color: var(--maroon); }
+.hide-sb::-webkit-scrollbar { display: none; }
+.hide-sb { -ms-overflow-style: none; scrollbar-width: none; }
+.view { display: none; }
+.view.active { display: block; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.pop { animation: popAnim .28s cubic-bezier(.175,.885,.32,1.275); }
+@keyframes popAnim { 0% { transform: scale(0.88); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.bubble-me { background: linear-gradient(135deg, var(--maroon), #4F0A18); color: #fff; border-radius: 18px 18px 4px 18px; }
+.bubble-them { background: var(--card); border: 1px solid var(--line); border-radius: 18px 18px 18px 4px; }
+
+/* BOTÓN CENTRAL FLOTANTE REDONDEADO */
+.floating-publish-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #781024, #D85A38);
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px rgba(107, 17, 36, 0.45);
+  transform: translateY(-16px);
+  border: 3.5px solid var(--surface);
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+  flex-shrink: 0;
+  z-index: 30;
+}
+.floating-publish-btn:active {
+  transform: translateY(-13px) scale(0.95);
+}
+
+/* DISEÑO TICKET PARA EVENTOS Y QUEDADAS */
+.event-ticket-card {
+  background: var(--ticket-bg);
+  border: 1.5px solid #E8C175;
+  border-radius: 22px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(212, 160, 61, 0.12);
+}
+.event-ticket-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #D4A03D, #D85A38, #6B1124);
+}
+.ticket-badge {
+  background: linear-gradient(135deg, #FFF3D6, #FFE2A8);
+  color: #7A4B00;
+  border: 1px solid rgba(212, 160, 61, 0.4);
+  box-shadow: 0 2px 6px rgba(212, 160, 61, 0.15);
+}
+.dark .ticket-badge {
+  background: linear-gradient(135deg, #2E2310, #3F2E14);
+  color: #FFDE8A;
+  border-color: rgba(229, 178, 77, 0.3);
+}
+
+/* DISEÑO NOTA PRIVADA / CUADERNO LITERARIO */
+.note-moleskine-card {
+  background: var(--parchment);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--maroon);
+  border-radius: 18px;
+  position: relative;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+/* MAPA ESTILO WAZE */
+.waze-map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 470px;
+  background: #E8ECE9;
+  overflow: hidden;
+  user-select: none;
+}
+.dark .waze-map-wrapper {
+  background: #101622;
+}
+.waze-road-main { stroke: #FFFFFF; stroke-width: 12; stroke-linecap: round; }
+.dark .waze-road-main { stroke: #2B3548; stroke-width: 12; }
+.waze-road-sec { stroke: #F3F5F4; stroke-width: 6; stroke-linecap: round; }
+.dark .waze-road-sec { stroke: #1D2536; stroke-width: 6; }
+.waze-highway { stroke: #FFDE7A; stroke-width: 14; stroke-linecap: round; }
+.dark .waze-highway { stroke: #4F4322; stroke-width: 14; }
+
+/* PINES FLOTANTES WAZE */
+.waze-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 20;
+}
+.waze-pin:hover {
+  transform: translate(-50%, -110%) scale(1.1);
+  z-index: 30;
+}
+.waze-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 9999px;
+  background: rgba(107, 17, 36, 0.3);
+  animation: wazePulse 2s infinite;
+  z-index: -1;
+}
+@keyframes wazePulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  70% { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* SWIPE CARDS R+J */
+.tinder-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+  user-select: none;
+  cursor: grab;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  touch-action: pan-y;
+}
+.tinder-card:active { cursor: grabbing; }
+.tinder-badge {
+  position: absolute;
+  top: 24px;
+  padding: 6px 14px;
+  border: 3px solid;
+  border-radius: 12px;
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: rotate(-15deg);
+  transition: opacity 0.15s ease;
+  z-index: 30;
+  pointer-events: none;
+}
+.tinder-badge.like { left: 24px; color: #10B981; border-color: #10B981; background: rgba(16, 185, 129, 0.15); transform: rotate(-12deg); }
+.tinder-badge.nope { right: 24px; color: #EF4444; border-color: #EF4444; background: rgba(239, 68, 68, 0.15); transform: rotate(12deg); }
+
+.reels-container {
+  height: calc(100dvh - 132px);
+  max-height: 730px;
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+}
+.reel-slide {
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+#toast {
+  position: absolute; left: 50%; bottom: 84px; transform: translate(-50%, 20px);
+  opacity: 0; transition: .25s ease; background: var(--ink); color: var(--surface);
+  padding: 9px 18px; border-radius: 9999px; font-size: 12px; font-weight: 700;
+  z-index: 100; pointer-events: none; white-space: nowrap; box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center sm:p-4">
+
+<div id="app" class="w-full max-w-md h-[100dvh] sm:h-[840px] flex flex-col relative overflow-hidden sm:rounded-[38px] sm:border shadow-2xl" style="background:var(--surface); border-color:var(--line);">
+<!-- PANTALLA DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
+    <div id="modal-auth" class="absolute inset-0 z-50 flex flex-col justify-center items-center p-6 bg-stone-950 text-stone-100 transition-opacity duration-300">
+      <div class="w-full max-w-sm space-y-6">
+        <div class="text-center space-y-2">
+          <div class="w-16 h-16 mx-auto bg-rose-900 rounded-full flex items-center justify-center text-3xl mb-4 shadow-lg border border-rose-800">📖</div>
+          <h2 class="serif text-3xl font-bold">Book Affinity</h2>
+          <p class="text-sm text-stone-400">Tu comunidad literaria te espera.</p>
+        </div>
+        
+        <div class="space-y-4 pt-4">
+          <div>
+            <label class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1.5 pl-1">Correo Electrónico</label>
+            <input type="email" id="auth-email" class="w-full p-3.5 rounded-xl bg-stone-900 border border-stone-800 text-white placeholder-stone-600 focus:border-rose-700 focus:outline-none transition" placeholder="lector@ejemplo.com">
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1.5 pl-1">Contraseña</label>
+            <input type="password" id="auth-pass" class="w-full p-3.5 rounded-xl bg-stone-900 border border-stone-800 text-white placeholder-stone-600 focus:border-rose-700 focus:outline-none transition" placeholder="Mínimo 6 caracteres">
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-3">
+          <button onclick="loginUser()" class="w-full py-3.5 rounded-full font-bold text-sm bg-rose-800 hover:bg-rose-700 transition shadow-lg text-white">Iniciar Sesión</button>
+          <button onclick="registerUser()" class="w-full py-3.5 rounded-full font-bold text-sm border border-stone-700 text-stone-300 hover:bg-stone-800 transition">Crear cuenta nueva</button>
+        </div>
+      </div>
+    </div>
+  <!-- CABECERA -->
+  <header class="flex items-center justify-between px-4 py-2.5 border-b shrink-0 z-20" style="background:var(--surface); border-color:var(--line);">
+    <div class="flex items-center gap-2.5 cursor-pointer" onclick="go('inicio')">
+      <!-- LOGOTIPO VECTORIAL REDISEÑADO -->
+      <svg class="w-10 h-10 shrink-0 drop-shadow-md" viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="bgGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#191F2B"/>
+            <stop offset="1" stop-color="#0E1219"/>
+          </linearGradient>
+          <linearGradient id="goldGrad" x1="20" y1="20" x2="60" y2="80" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FCE5A2"/>
+            <stop offset="0.5" stop-color="#DDA642"/>
+            <stop offset="1" stop-color="#9E6E1D"/>
+          </linearGradient>
+          <linearGradient id="coralGrad" x1="45" y1="30" x2="85" y2="80" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FF7B54"/>
+            <stop offset="0.6" stop-color="#D85A38"/>
+            <stop offset="1" stop-color="#8F1F35"/>
+          </linearGradient>
+        </defs>
+        <rect width="100" height="100" rx="24" fill="url(#bgGrad)"/>
+        <path d="M20 70 C30 65, 42 66, 48 71 L48 27 C42 24, 30 24, 20 27 Z" fill="#3A4861" opacity="0.85"/>
+        <path d="M24 68 C32 64, 43 65, 48 68 L48 28 C43 26, 32 26, 24 28 Z" fill="url(#goldGrad)"/>
+        <path d="M28 32 L40 32 C48 32, 53 36, 50 44 C48 49, 43 51, 39 52 C46 52, 50 58, 48 65 C46 71, 38 72, 28 72 Z" fill="url(#goldGrad)"/>
+        <path d="M42 47 C44 43 48 44 48 48 C48 52 42 56 42 56 C42 56 36 52 36 48 C36 44 40 43 42 47 Z" fill="#FF5252"/>
+        <path d="M53 71 L63 29 L71 29 L81 71 L72 71 L70 60 L58 60 L56 71 Z" fill="url(#coralGrad)"/>
+        <path d="M64 42 L67 52 L61 52 Z" fill="#131720"/>
+        <path d="M57 54 C66 50, 75 42, 80 32 C73 37, 65 44, 57 48 Z" fill="#FFA07A"/>
+      </svg>
+      <div>
+        <span class="serif text-lg font-bold tracking-tight block leading-tight text-stone-900 dark:text-stone-100">book affinity</span>
+        <span class="text-[9px] font-extrabold tracking-widest uppercase text-amber-700 dark:text-amber-400 block">Dating & Cultural Matching</span>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <!-- MENSAJES CON CONTADOR -->
+      <button class="icon-btn" onclick="go('mensajes')" title="Conversaciones literarias">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>
+        </svg>
+        <span id="chat-badge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-600 text-[9px] text-white font-extrabold flex items-center justify-center border-2 border-white dark:border-stone-900 animate-pulse">2</span>
+      </button>
+
+      <button id="theme-btn" class="icon-btn" onclick="toggleTheme()" aria-label="Cambiar tema"></button>
+      
+      <!-- PERFIL -->
+      <button onclick="go('perfil')" class="relative w-9 h-9 flex items-center justify-center rounded-full hover:ring-2 hover:ring-rose-800 transition" title="Ver mi perfil">
+        <svg viewBox="0 0 36 36" class="absolute inset-0 w-9 h-9 -rotate-90">
+          <circle cx="18" cy="18" r="15" stroke="var(--line)" stroke-width="2.5" fill="none"/>
+          <circle id="hdr-ring" cx="18" cy="18" r="15" stroke="var(--maroon)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Kur-ko" class="w-7 h-7 rounded-full object-cover shadow-sm border border-amber-600" />
+      </button>
+    </div>
+  </header>
+
+  <!-- VISTAS DE PANTALLA -->
+  <main id="main" class="flex-1 overflow-y-auto hide-sb relative pb-20">
+    <section id="v-inicio" class="view"></section>
+    <section id="v-biblioteca" class="view"></section>
+    <section id="v-mapa" class="view"></section>
+    <section id="v-quiz" class="view"></section>
+    <section id="v-mensajes" class="view"></section>
+    <section id="v-perfil" class="view"></section>
+  </main>
+
+  <!-- NAVEGACIÓN INFERIOR -->
+  <nav class="absolute bottom-0 inset-x-0 flex justify-between items-center border-t px-2 py-1 z-20" style="background:var(--surface); border-color:var(--line);">
+    <button class="nav-btn" data-tab="inicio" onclick="go('inicio')"></button>
+    <button class="nav-btn" data-tab="biblioteca" onclick="go('biblioteca')"></button>
+
+    <button class="floating-publish-btn" onclick="openUniversalComposer()" title="Crear momento, cita o vídeo">
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span class="text-[8px] font-black uppercase tracking-tight -mt-0.5 leading-none">Crear</span>
+    </button>
+
+    <button class="nav-btn" data-tab="mapa" onclick="go('mapa')"></button>
+    <button class="nav-btn" data-tab="quiz" onclick="go('quiz')"></button>
+  </nav>
+
+  <!-- COMPOSER UNIVERSAL -->
+  <div id="modal-composer" class="absolute inset-0 hidden z-50 flex items-end" style="background:rgba(0,0,0,0.65);" onclick="if(event.target===this)closeComposer()">
+    <div class="w-full rounded-t-3xl p-5 space-y-4 pop max-h-[94%] overflow-y-auto hide-sb" style="background:var(--surface); border-top:1px solid var(--line);">
+      <div class="flex items-center justify-between border-b pb-2" style="border-color:var(--line)">
+        <div class="flex items-center gap-2">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" class="w-8 h-8 rounded-full object-cover border border-amber-600"/>
+          <div>
+            <span class="text-xs font-bold block leading-tight">Kur-ko</span>
+            <span id="composer-mode-badge" class="text-[9px] font-bold text-stone-500 uppercase">Nota de lectura</span>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="closeComposer()">✕</button>
+      </div>
+
+      <div id="composer-media-preview" class="hidden relative rounded-2xl overflow-hidden border shadow-sm" style="border-color:var(--line);">
+        <img id="composer-preview-img" src="" class="w-full h-48 object-cover hidden"/>
+        <div id="composer-preview-video" class="w-full h-48 bg-stone-900 text-white flex flex-col items-center justify-center hidden relative">
+          <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-xl mb-1">▶</div>
+          <span class="text-xs font-bold text-amber-300">Reel Vertical de Recomendación</span>
+          <span class="text-[10px] text-stone-400">Estilo BookTok</span>
+        </div>
+        <button onclick="removeAttachedMedia()" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white text-xs flex items-center justify-center hover:bg-black/90">✕</button>
+      </div>
+
+      <div id="composer-reel-question-box" class="hidden p-3 rounded-2xl bg-amber-50 dark:bg-stone-900 border border-amber-300 dark:border-stone-700 space-y-1">
+        <label class="text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-400 block">
+          ⚡ Pregunta detonante para romper el hielo en el Reel:
+        </label>
+        <input id="composer-reel-q" placeholder="Ej: ¿Perdonarías este final? ¿Coincides o discrepas?"
+               class="w-full rounded-xl px-3 py-1.5 text-xs font-semibold outline-none border"
+               style="background:var(--card); border-color:var(--line); color:var(--ink)"/>
+      </div>
+
+      <textarea id="composer-text" rows="3" placeholder="¿Qué estás leyendo, subrayando o debatiendo?..."
+        class="w-full rounded-2xl p-3.5 text-sm outline-none resize-none leading-relaxed"
+        style="background:var(--card); border:1px solid var(--line); color:var(--ink)"></textarea>
+
+      <div class="flex items-center justify-between pt-1">
+        <div class="flex items-center gap-2">
+          <select id="composer-book" class="rounded-full px-3 py-1.5 text-xs font-bold border outline-none cursor-pointer flex items-center"
+                  style="background:var(--card); border-color:var(--line); color:var(--maroon)">
+          </select>
+          <button type="button" onclick="attachPhoto()" class="icon-btn text-xs" title="Adjuntar foto de libro / momento">📸</button>
+          <button type="button" onclick="attachVideo()" class="icon-btn text-xs" title="Crear Reel vertical estilo BookTok">🎬</button>
+        </div>
+
+        <button class="btn px-5 py-2 font-bold shadow-md" onclick="publishUniversalContent()">
+          Publicar 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL MATCH: COMPLICIDAD DE LECTURA -->
+  <div id="modal-match" class="absolute inset-0 hidden z-50 flex items-center justify-center p-5" style="background:rgba(10,12,18,0.85); backdrop-filter:blur(8px);">
+    <div class="w-full max-w-sm rounded-3xl p-6 text-center space-y-4 pop border shadow-2xl relative" style="background:var(--surface); border-color:var(--gold);">
+      <div class="inline-block px-3 py-1 rounded-full text-xs font-black tracking-widest text-amber-950 dark:text-amber-200 uppercase shadow-md bg-gradient-to-r from-amber-300 to-amber-500">
+        ✨ ¡Complicidad de Lectura Hallada! ✨
+      </div>
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <div class="w-20 h-20 rounded-full p-1 border-2 border-amber-500 shadow-lg relative">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" class="w-full h-full rounded-full object-cover"/>
+        </div>
+        <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-md text-white" style="background:linear-gradient(135deg,var(--maroon),var(--accent))">
+          📖
+        </div>
+        <div class="w-20 h-20 rounded-full p-1 border-2 border-rose-500 shadow-lg">
+          <img id="match-photo" src="" class="w-full h-full rounded-full object-cover"/>
+        </div>
+      </div>
+      <div>
+        <h3 class="serif text-xl font-bold" id="match-name"></h3>
+        <p class="text-xs font-bold text-amber-700 dark:text-amber-400 mt-0.5" id="match-af"></p>
+        <p class="text-xs mt-2 px-2 leading-relaxed" style="color:var(--muted)" id="match-desc"></p>
+      </div>
+      <div class="space-y-2 pt-2">
+        <button class="btn w-full py-3 text-xs font-bold shadow-lg" onclick="startMatchChat()">
+          Susurrar cita y romper el hielo ✉️
+        </button>
+        <button class="btn-ghost w-full py-2.5 text-xs font-semibold" onclick="closeMatchModal()">
+          Seguir descubriendo almas lectoras
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SUSURRO -->
+  <div id="modal-whisper" class="absolute inset-0 hidden z-50 flex items-end" style="background:rgba(0,0,0,0.6);" onclick="if(event.target===this)closeWhisper()">
+    <div class="w-full rounded-t-3xl p-5 space-y-3 pop" style="background:var(--surface); border-top:1px solid var(--line);">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="serif text-lg font-bold" id="wh-title">Susurrar cita</h2>
+          <p class="text-xs" style="color:var(--muted)" id="wh-sub"></p>
+        </div>
+        <button class="icon-btn" onclick="closeWhisper()">✕</button>
+      </div>
+      <div class="flex gap-2 overflow-x-auto hide-sb py-1" id="wh-chips"></div>
+      <textarea id="wh-text" rows="3" maxlength="280" placeholder="Escribe algo sobre este libro..." class="w-full rounded-xl p-3 text-sm outline-none resize-none" style="background:var(--card);border:1px solid var(--line);color:var(--ink)"></textarea>
+      <div class="flex items-center justify-between pt-1">
+        <span class="text-[11px]" style="color:var(--muted)">Inicia un chat con contexto directo</span>
+        <button class="btn" onclick="sendWhisper()">Enviar susurro ✉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL LIBRO CON SINOPSIS Y COMPRA -->
+  <div id="modal-book" class="absolute inset-0 hidden z-50 flex flex-col justify-end" style="background:rgba(0,0,0,0.65);" onclick="if(event.target===this)closeBookModal()">
+    <div class="w-full max-h-[92%] overflow-y-auto hide-sb rounded-t-3xl p-5 space-y-4 pop" style="background:var(--surface); border-top:1px solid var(--line);">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style="background:var(--accent-soft);color:var(--accent)" id="mb-genre"></span>
+          <h2 class="serif text-xl font-bold mt-1" id="mb-title"></h2>
+          <p class="text-xs font-medium" style="color:var(--muted)" id="mb-author"></p>
+        </div>
+        <button class="icon-btn" onclick="closeBookModal()">✕</button>
+      </div>
+
+      <div class="card p-4 space-y-2">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Sinopsis de la obra</h4>
+        <p class="text-xs leading-relaxed text-stone-700 dark:text-stone-300 italic" id="mb-synopsis"></p>
+      </div>
+
+      <div class="card p-4 space-y-2.5 bg-gradient-to-br from-amber-50 to-stone-50 dark:from-stone-900 dark:to-stone-800 border-amber-200 dark:border-stone-700">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-400 flex items-center gap-1.5">
+            🛒 Conseguir ejemplar oficial
+          </span>
+          <span class="text-xs font-extrabold text-stone-900 dark:text-white" id="mb-price">18,90 €</span>
+        </div>
+        <p class="text-[10px]" style="color:var(--muted)">Apoya al ecosistema comprando en nuestras librerías asociadas o en tu comercio de barrio.</p>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button class="btn bg-amber-800 hover:bg-amber-900 text-xs py-2" onclick="buyBookAction('Casa del Libro')">
+            Casa del Libro →
+          </button>
+          <button class="btn-ghost text-xs py-2 text-center" onclick="buyBookAction('Librería de Barrio (TodosTusLibros)')">
+            Librería de Barrio 📍
+          </button>
+        </div>
+      </div>
+
+      <div class="card p-4 space-y-3" style="background:var(--card)">
+        <div class="flex items-center justify-between border-b pb-3" style="border-color:var(--line)">
+          <div>
+            <div class="text-xs uppercase font-bold" style="color:var(--muted)">Media Book Affinity</div>
+            <div class="text-3xl font-extrabold serif flex items-center gap-1.5" style="color:var(--gold)">
+              ★ <span id="mb-rating">--</span><span class="text-xs font-normal" style="color:var(--muted)">/10</span>
+            </div>
+            <div class="text-[10px]" style="color:var(--muted)" id="mb-votes">votos computados</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs uppercase font-bold" style="color:var(--maroon)">Tu nota</div>
+            <div class="text-2xl font-bold" id="mb-my-rating">Sin votar</div>
+          </div>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider mb-1.5" style="color:var(--muted)">Histograma de valoraciones</p>
+          <div class="flex items-end gap-1 h-16 w-full pt-2" id="mb-bars"></div>
+          <div class="flex justify-between text-[9px] font-bold mt-1 px-0.5" style="color:var(--muted)">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-xs font-semibold mb-1.5">Puntúa este libro para afinar tu algoritmo:</p>
+        <div class="flex justify-between gap-1" id="mb-stars"></div>
+      </div>
+      <div id="mb-match-box" class="card p-3 text-xs space-y-1" style="background:var(--maroon-soft); border-color:transparent"></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script>
+// ==========================================
+// 🔌 CONEXIÓN OFICIAL A SUPABASE
+// ==========================================
+const SUPABASE_URL = 'https://jgcwqcrxyqeicvuaqczm.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ViShxI8l66CoO8IdBg5JEw_ZUAK_nSt';
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.sbClient = sbClient;
+// ==========================================
+// 📚 CONSUMO DE DATOS REALES (SUPABASE)
+// ==========================================
+async function fetchUserRatingsFromDB() {
+  const activeUser = (typeof S !== 'undefined' && S.user && S.user.name) ? S.user.name.toLowerCase() : 'kurko';
+  try {
+    const { data, error } = await sbClient
+      .from('book_ratings')
+      .select('book_id, rating')
+      .eq('user_id', activeUser);
+
+    if (error) {
+      console.error('Error al cargar valoraciones de usuario:', error.message);
+      return;
+    }
+
+    if (data && data.length > 0) {
+      if (!S.myRatings) S.myRatings = {};
+      data.forEach(row => {
+        S.myRatings[row.book_id] = row.rating;
+      });
+      console.log('Valoraciones del usuario cargadas desde Supabase:', S.myRatings);
+      if (document.getElementById('v-biblioteca')) renderBiblioteca();
+    }
+  } catch (err) {
+    console.error('Fallo de red al consultar ratings:', err);
+  }
+}
+async function fetchBooksFromDB() {
+  try {
+    const { data, error } = await sbClient
+      .from('books')
+      .select('*')
+      .order('rating_avg', { ascending: false });
+
+    if (error) {
+      console.error('Error al obtener libros de Supabase:', error.message);
+      return [];
+    }
+
+    console.log('Libros cargados con éxito desde Supabase:', data);
+
+    // Mapeo exacto a las propiedades que usa renderBiblioteca()
+    const realBooks = data.map(b => ({
+      id: b.id,
+      t: b.title,                                                    // Título
+      a: b.author,                                                   // Autor
+      g: b.genre,                                                    // Género
+      syn: b.synopsis,                                               // Sinopsis
+      synopsis: b.synopsis,
+      r: b.rating_avg != null ? Number(b.rating_avg).toFixed(1) : '9.0', // Nota / Rating
+      score: b.rating_avg != null ? Number(b.rating_avg).toFixed(1) : '9.0',
+      price: b.price_eur != null ? `${Number(b.price_eur).toFixed(2).replace('.', ',')} €` : '12,95 €',
+      c1: (b.cover_palette && b.cover_palette[0]) ? b.cover_palette[0] : '#6B1124', // Color 1 portada
+      c2: (b.cover_palette && b.cover_palette[1]) ? b.cover_palette[1] : '#1B1816', // Color 2 portada
+      votes: b.votes_count
+    }));
+
+    // Inyectamos en BOOKS y en S si existen
+    if (typeof BOOKS !== 'undefined' && realBooks.length > 0) {
+      BOOKS.length = 0;
+      BOOKS.push(...realBooks);
+    }
+    if (typeof S !== 'undefined' && realBooks.length > 0) {
+      S.books = realBooks;
+    }
+
+    // Repintamos la vista de la biblioteca
+    if (typeof renderBiblioteca === 'function') {
+      renderBiblioteca();
+    }
+
+    return realBooks;
+  } catch (err) {
+    console.error('Fallo de red o conexión:', err);
+    return [];
+  }
+}
+// ==========================================
+// 📍 CONSUMO DE EVENTOS / QUEDADAS (SUPABASE)
+// ==========================================
+async function fetchEventsFromDB() {
+  try {
+    const { data, error } = await sbClient
+      .from('events')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error('Error al obtener evento de Supabase:', error.message);
+      return null;
+    }
+
+    if (data && data.length > 0) {
+      const ev = data[0];
+      console.log('Evento activo cargado desde Supabase:', ev);
+
+      if (typeof S !== 'undefined') {
+        S.featuredEvent = ev;
+      }
+
+      if (typeof renderInicio === 'function') {
+        renderInicio();
+      } else if (typeof renderFeed === 'function') {
+        renderFeed();
+      }
+
+      return ev;
+    }
+    return null;
+  } catch (err) {
+    console.error('Fallo al cargar evento:', err);
+    return null;
+  }
+}
+// ==========================================
+// 📰 CONSUMO DEL FEED DE NOTAS (SUPABASE)
+// ==========================================
+async function fetchFeedFromDB() {
+  try {
+    const { data, error } = await sbClient
+      .from('notes')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error al obtener notas del feed:', error.message);
+      return [];
+    }
+
+    console.log('Notas del feed cargadas desde Supabase:', data);
+
+    const realNotes = data.map(n => {
+      const uName = (n.user_name || '').toLowerCase();
+      let userId = 'kurko';
+      if (uName.includes('marcos')) userId = 'marcos';
+      else if (uName.includes('laura')) userId = 'laura';
+
+      // Buscar el libro correspondiente en el catálogo BOOKS por título
+      let foundBook = null;
+      if (typeof BOOKS !== 'undefined' && Array.isArray(BOOKS)) {
+        foundBook = BOOKS.find(b => 
+          b.t && n.book_title && b.t.toLowerCase().trim() === n.book_title.toLowerCase().trim()
+        );
+        if (!foundBook && n.book_title) {
+          foundBook = BOOKS.find(b => 
+            b.t && b.t.toLowerCase().includes(n.book_title.toLowerCase())
+          );
+        }
+      }
+
+      // Si no lo encuentra, usamos el id del libro encontrado o el que corresponda
+      const finalBookId = foundBook ? foundBook.id : 3;
+
+      return {
+        type: 'quote',
+        id: userId,
+        postId: n.id,
+        user: userId,
+        author: n.user_name,
+        book: finalBookId,
+        q: n.book_quote,
+        noteReflection: n.user_comment || 'Reflexión compartida en comunidad',
+        page: '42',
+        place: n.location_name || 'Madrid · Lectura activa',
+        likes: Number(n.likes_count) || 0,
+        match: Number(n.match_percent) || 100,
+        rating: Number(n.rating) || 9.5,
+        time: 'Justo ahora'
+      };
+    });
+
+    if (typeof FEED_ITEMS !== 'undefined' && realNotes.length > 0) {
+      const existingEvent = FEED_ITEMS.find(item => item.type === 'event');
+      FEED_ITEMS.length = 0;
+      if (existingEvent) {
+        FEED_ITEMS.push(existingEvent);
+      }
+      FEED_ITEMS.push(...realNotes);
+    }
+
+    if (typeof renderInicio === 'function') {
+      renderInicio();
+    }
+
+    return realNotes;
+  } catch (err) {
+    console.error('Fallo al cargar feed:', err);
+    return [];
+  }
+}
+// ==========================================
+// 🎟️ RESERVAR PLAZA EN EVENTO (SUPABASE)
+// ==========================================
+async function reservarPlazaEvento() {
+  if (!S.featuredEvent) return;
+  
+  if (S.featuredEvent.spots_left <= 0) {
+    alert('¡Aforo completo! No quedan plazas disponibles.');
+    return;
+  }
+
+  const nuevoAforo = S.featuredEvent.spots_left - 1;
+
+  try {
+    const { error } = await sbClient
+      .from('events')
+      .update({ spots_left: nuevoAforo })
+      .eq('id', S.featuredEvent.id);
+
+    if (error) {
+      console.error('Error al reservar plaza:', error.message);
+      return;
+    }
+
+    // Actualizamos localmente el estado
+    S.featuredEvent.spots_left = nuevoAforo;
+    
+    // Actualizamos el texto visual de plazas en la pantalla
+    const allSpans = document.querySelectorAll('span, div, p');
+    allSpans.forEach(el => {
+      if (el.textContent && el.textContent.includes('Quedan') && el.textContent.includes('plazas')) {
+        el.textContent = `Quedan ${nuevoAforo} plazas`;
+      }
+    });
+
+    alert('¡Plaza reservada con éxito! Te esperamos este sábado.');
+  } catch (err) {
+    console.error('Error de red al reservar:', err);
+  }
+}
+
+// Cargar automáticamente los datos al iniciar la página
+window.addEventListener('DOMContentLoaded', () => {
+    checkSession(); // <-- Candado de seguridad: comprueba si hay usuario activo
+    fetchBooksFromDB();
+    fetchEventsFromDB();
+    fetchFeedFromDB();
+    fetchUserRatingsFromDB(); 
+});
+/* ICONOGRAFÍA SVG */
+const I = {
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  library:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/>',
+  play:'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 9l5 3-5 3z"/>',
+  map:'<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+  msg:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  gamepad:'<rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4m-2-2v4m9-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>',
+  heart:'<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>',
+  spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>',
+  moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  flame:'<path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-6 1-9.5z"/>',
+  send:'<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>',
+  back:'<path d="M15 18l-6-6 6-6"/>',
+  volume:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>',
+  compass:'<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>'
+};
+const ic = (n, cls='w-5 h-5', fill=false) => `<svg class="${cls}" viewBox="0 0 24 24" fill="${fill?'currentColor':'none'}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${I[n]||''}</svg>`;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const now = () => new Date().toTimeString().slice(0,5);
+
+const USERS_DATA = {
+  kurko: { name:'Kur-ko', photo:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80', af:100 },
+  laura: { name:'Laura Martínez', photo:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80', af:96, city:'Madrid Centro', bio:'Si subrayas libros con lápiz blando y amas perderte en librerías de viejo los domingos, ya tenemos el 90% ganado.', faveBook:'Tokio Blues · Murakami', tag:'Noches de jazz y poesía' },
+  clara: { name:'Clara Vega', photo:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80', af:92, city:'Barrio de las Letras', bio:'Filósofa por vocación, editora por oficio. Busco a alguien para debatir si el final de Cortázar era inevitable con una copa de vino.', faveBook:'Rayuela / Ficciones', tag:'Cafés silenciosos' },
+  marcos: { name:'Marcos Ruiz', photo:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80', af:88, city:'Chamberí', bio:'Devorador de distopías y realismo mágico. Odio doblar las esquinas de las páginas con toda mi alma.', faveBook:'1984 · Orwell', tag:'Té negro y ensayos' },
+  sofia: { name:'Sofía Bécquer', photo:'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80', af:94, city:'Salamanca', bio:'Escribo cuentos que nadie lee y leo ensayos que todo el mundo debería conocer. Mi cita soñada es recorrer La Cuesta de Moyano.', faveBook:'Cien años de soledad', tag:'Cartas manuscritas' }
+};
+
+const BOOKS = [
+  { 
+    id:1, t:'Tokio Blues (Norwegian Wood)', a:'Haruki Murakami', g:'Ficción Contemporánea', r:9.2, votes:4120, dist:[1,2,2,4,7,12,18,24,20,10], 
+    tags:['Melancolía','Amor','Tokio'], c1:'#8E2837', c2:'#1C1A17', price:'19,90 €',
+    synopsis:'Toru Watanabe escucha una canción de los Beatles al aterrizar en Hamburgo y se ve transportado al Tokio convulso de finales de los sesenta. Una historia íntima sobre las pérdidas, el despertar sexual, la música y la fragilidad del primer amor.'
+  },
+  { 
+    id:2, t:'Ficciones', a:'Jorge Luis Borges', g:'Cuentos Filosóficos', r:9.4, votes:6830, dist:[1,1,1,2,5,8,15,22,25,20], 
+    tags:['Laberintos','Filosofía','Tiempo'], c1:'#2F6B57', c2:'#12151D', price:'14,50 €',
+    synopsis:'Una cumbre de la literatura universal dividida en El jardín de senderos que se bifurcan y Artificios. Relatos laberínticos sobre bibliotecas infinitas, enciclopedias secretas, conspiraciones teológicas y espejos traicioneros.'
+  },
+  { 
+    id:3, t:'Cien años de soledad', a:'Gabriel García Márquez', g:'Realismo Mágico', r:9.6, votes:12400, dist:[0,1,1,2,4,6,12,20,28,26], 
+    tags:['Familia','Clásico','Macondo'], c1:'#B4612A', c2:'#2A1F1B', price:'21,00 €',
+    synopsis:'La saga mítica de la familia Buendía a lo largo de siete generaciones en el pueblo ficticio de Macondo. Pasiones desmedidas, guerras civiles, mariposas amarillas y una soledad ancestral que resiste el paso de las tormentas.'
+  },
+  { 
+    id:4, t:'La sombra del viento', a:'Carlos Ruiz Zafón', g:'Misterio & Novela Histórica', r:8.8, votes:7920, dist:[1,2,3,5,9,14,20,24,15,7], 
+    tags:['Barcelona','Cementerio de Libros'], c1:'#34407A', c2:'#12151D', price:'18,50 €',
+    synopsis:'Un amanecer de 1945, un muchacho es conducido por su padre al misterioso Cementerio de los Libros Olvidados en el corazón de Barcelona. Allí escoge un volumen maldito que cambiará el destino de su vida entera.'
+  },
+  { 
+    id:5, t:'1984', a:'George Orwell', g:'Distopía Política', r:9.5, votes:14100, dist:[1,1,2,2,5,8,14,22,25,20], 
+    tags:['Totalitarismo','Vigilancia','Amor'], c1:'#5B1F24', c2:'#0B0D12', price:'12,95 €',
+    synopsis:'Winston Smith vive en una sociedad dominada por el Gran Hermano y la Policía del Pensamiento, donde el pasado se reescribe diariamente. Su intento clandestino de amar se convierte en el mayor acto de rebelión.'
+  },
+  { 
+    id:6, t:'Sapiens: De animales a dioses', a:'Yuval Noah Harari', g:'Ensayo & Antropología', r:8.3, votes:8900, dist:[2,3,4,6,11,16,21,21,11,5], 
+    tags:['Historia','Evolución'], c1:'#8A6A2B', c2:'#1C1A17', price:'22,00 €',
+    synopsis:'¿Cómo logró una especie insignificante de simios convertirse en la dominadora absoluta del planeta Tierra? Un recorrido apasionante por las revoluciones cognitiva, agrícola y científica.'
+  }
+];
+
+let FEED_ITEMS = [
+  {
+    type: 'event', postId: 'ev-1', id: 'ev-1', badge: 'Quedada Oficial Book Affinity',
+    title: 'Cita a Ciegas con Libro Envuelto', date: 'Este Sábado · 18:30 h', venue: 'Café La Buena Vida (Plaza de Oriente)',
+    desc: 'Llevas tu novela favorita envuelta en papel kraft con 3 adjetivos escritos a mano. El algoritmo empareja las mesas según tu afinidad lectora.',
+    spotsLeft: 4, img: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=700&q=80',
+    organizer: 'Equipo Book Affinity'
+  },
+  {
+    type: 'quote', postId: 'p-1', id: 'laura', book: 1, page: 142, place: 'Café La Central (Callao)',
+    q: 'Nadie ama la soledad. Simplemente no me esfuerzo por hacer amigos para no decepcionarme.',
+    noteReflection: 'Leí esto en el tren y se me encogió el pecho. Cuántas veces nos aislamos por puro miedo al desencanto.',
+    img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=700&q=80',
+    likes: 64, time: 'Hace 20 min'
+  },
+  {
+    type: 'event', postId: 'ev-2', id: 'ev-2', badge: 'Club de Vino & Debate',
+    title: '¿Final feliz o final honesto? Cortázar vs Murakami', date: 'Próximo Jueves · 20:00 h', venue: 'Vinoteca La Fisna (Lavapiés)',
+    desc: 'Tertulia regada con buen tinto para debatir sobre los desenlaces literarios que nos dejaron el corazón roto. Plazas limitadas a 12 lectores.',
+    spotsLeft: 2, img: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=700&q=80',
+    organizer: 'Clara Vega'
+  },
+  {
+    type: 'photo', postId: 'p-photo-1', id: 'sofia', book: 3, place: 'Cuesta de Moyano (Caseta 12)',
+    caption: 'Domingo de hallazgos imposibles: primera edición encontrada por casualidad y café solo en banco de piedra. Si esto no es paz, no sé qué es.',
+    noteReflection: 'Ojalá alguien con quien compartir mañanas de domingo de lomos ajados y silencio cómplice.',
+    img: 'https://images.unsplash.com/photo-1507842229450-7990e3488c73?auto=format&fit=crop&w=700&q=80',
+    likes: 89, time: 'Hace 1 h'
+  },
+  {
+    type: 'quote', postId: 'p-4', id: 'marcos', book: 2, page: 73, place: 'Librería Tipos Móviles',
+    q: 'El tiempo se bifurca perpetuamente hacia innumerables futuros.',
+    noteReflection: 'Pensar que cualquier decisión mínima abre un universo nuevo me vuela la cabeza.',
+    img: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=700&q=80',
+    likes: 42, time: 'Hace 3 h'
+  }
+];
+
+let REELS = [
+  {
+    id: 'r1', user: 'clara', book: 2,
+    quote: '¿Es Borges el autor definitivo para filtrar una cita de Tinder?',
+    audio: 'Café de París · Acordeón suave',
+    triggerQuestion: '¿Aceptarías una segunda cita con alguien que no entiende Ficciones?',
+    videoBg: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80',
+    likes: 1820, comments: 142
+  },
+  {
+    id: 'r2', user: 'laura', book: 1,
+    quote: 'Cuando Murakami describe la lluvia en Tokio y tú estás atascado en el cercanías.',
+    audio: 'Lofi Rain · Tokyo Vibes',
+    triggerQuestion: '¿Cuál es tu lugar favorito para leer en días de tormenta?',
+    videoBg: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+    likes: 2430, comments: 98
+  },
+  {
+    id: 'r3', user: 'marcos', book: 4,
+    quote: 'Tres libros que tienes que haber leído para que tengamos una cita en condiciones.',
+    audio: 'Noches de Barcelona · Guitarra acústica',
+    triggerQuestion: '¿Cuál es tu joya literaria imprescindible?',
+    videoBg: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80',
+    likes: 980, comments: 54
+  }
+];
+
+const THREADS = {
+  kurko: { name:'Kur-ko (Tú)', photo:USERS_DATA.kurko.photo, af:100, city:'Madrid', hook:'Leyendo Tokio Blues', msgs:[] },
+  laura: { name:'Laura Martínez', photo:USERS_DATA.laura.photo, af:96, city:'Madrid', hook:'Tokio Blues · pág. 142', msgs:[
+    { me:false, t:'Tu subrayado de Tokio Blues me ha alegrado la tarde en el cercanías 📚', time:'18:10' },
+    { me:true, t:'Es uno de mis libros intocables. ¿Vas mucho por La Central?', time:'18:14' },
+    { me:false, t:'¡Casi todos los viernes! Suelo pedirme un flat white en la mesa redonda del fondo. ¿Sueles leer allí?', time:'18:16' }
+  ]},
+  sofia: { name:'Sofía Bécquer', photo:USERS_DATA.sofia.photo, af:94, city:'Madrid', hook:'Cuesta de Moyano', msgs:[
+    { me:false, t:'¡Hola Kur-ko! Acabo de ver que compartimos complicidad con García Márquez. ¿Vas a la quedada del sábado?', time:'19:30' }
+  ]},
+  clara: { name:'Clara Vega', photo:USERS_DATA.clara.photo, af:92, city:'Madrid', hook:'Ficciones · Borges', msgs:[
+    { me:false, t:'¿Coincidimos en el debate de relatos del próximo jueves?', time:'Ayer' }
+  ]},
+  marcos: { name:'Marcos Ruiz', photo:USERS_DATA.marcos.photo, af:88, city:'Madrid', hook:'1984 · Orwell', msgs:[
+    { me:false, t:'¡Hola! Me fijé que votaste papel en el duelo del día.', time:'Mar' }
+  ]}
+};
+
+const RJ_QUIZ_QUESTIONS = [
+  {
+    id: 1,
+    q: "¿Qué haces cuando encuentras una frase que te parte el alma?",
+    opts: [
+      { text: "La subrayo a lápiz fino y anoto la fecha al margen", trait: "Romántico Introspectivo", boost: 12 },
+      { text: "Le hago una foto para enviársela a alguien especial", trait: "Conector Emocional", boost: 15 },
+      { text: "Ni de broma toco el papel: uso un marcapáginas pulcro", trait: "Purista Bibliófilo", boost: 8 },
+      { text: "Doblo la esquina de la hoja para no olvidarla jamás", trait: "Lector Caótico", boost: 6 }
+    ]
+  },
+  {
+    id: 2,
+    q: "Tu cita soñada para conocer a tu complicidad lectora:",
+    opts: [
+      { text: "Perdidos en una librería de lance y luego café de especialidad", trait: "Bohemio Clásico", boost: 14 },
+      { text: "Copa de vino tinto debatiendo finales abiertos en una terraza", trait: "Intelectual Nocturno", boost: 15 },
+      { text: "Manta en el parque leyendo en silencio cómplice uno junto al otro", trait: "Alma Tranquila", boost: 16 },
+      { text: "Intercambiarnos un libro secreto envuelto y comentarlo en directo", trait: "Aventurero Romántico", boost: 18 }
+    ]
+  },
+  {
+    id: 3,
+    q: "¿Qué tipo de finales te hacen enamorarte de una historia?",
+    opts: [
+      { text: "Agriodulces y melancólicos que te dejan mirando al techo", trait: "Murakamiano", boost: 12 },
+      { text: "Giros laberínticos donde nada era lo que parecía", trait: "Borgiano", boost: 14 },
+      { text: "Finales redondos donde el amor vence al destino", trait: "Optimista Incurable", boost: 15 },
+      { text: "Finales crudos y realistas que desafían el statu quo", trait: "Espíritu Crítico", boost: 10 }
+    ]
+  },
+  {
+    id: 4,
+    q: "Un 'Red Flag' literario absoluto en tu primera cita sería:",
+    opts: [
+      { text: "Que me diga que 'no lee porque no tiene tiempo'", trait: "Exigente", boost: 10 },
+      { text: "Que juzgue a alguien por el género que decide leer", trait: "Mente Abierta", boost: 12 },
+      { text: "Que abra los libros 180º quebrando el lomo sin piedad", trait: "Protector de Libros", boost: 14 },
+      { text: "Que me haga spoiler del final sin previo aviso", trait: "Guardián de Historias", boost: 15 }
+    ]
+  }
+];
+
+const S = {
+  tab: 'inicio',
+  feedMode: 'notas',
+  dark: false,
+  user: { name:'Kur-ko', city:'Madrid', streak:5, page:260, reading:1, readToday:false, photo:USERS_DATA.kurko.photo },
+  myRatings: { 1:9, 5:10 },
+  liked: {}, likes: {},
+  filter: 'all', q: '',
+  votesDuel: { papel:814, digital:320 }, myVoteDuel: null,
+  activeChat: null,
+  mapFilter: 'all',
+  mapPin: 'cafe1',
+  eventsBooked: { 'ev-1': false, 'ev-2': false },
+  composerMedia: null,
+  composerPhotoSrc: null,
+  quizScreen: 'hub',
+  quizScore: 280,
+  hangman: { word: 'FICCIÓN', hint: 'Género predilecto de Jorge Luis Borges', guessed: [], fails: 0, maxFails: 6 },
+  rjStep: 'matches',
+  rjCurQuestion: 0,
+  rjUserTraits: ['Romántico Introspectivo'],
+  rjCrushIndex: 0,
+  rjMatchList: ['laura', 'sofia', 'clara', 'marcos'],
+  lastMatchedUser: null
+};
+
+FEED_ITEMS.forEach(p => { if(p.likes) S.likes[p.postId] = p.likes; });
+REELS.forEach(r => S.likes[r.id] = r.likes);
+
+const bookOf = id => BOOKS.find(b => b.id === Number(id)) || BOOKS[0];
+const pctRead = () => Math.round(S.user.page / 384 * 100);
+
+function toast(m){
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function go(tab){
+  S.tab = tab;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('v-'+tab);
+  if(el) el.classList.add('active');
+  renderNav();
+  ({
+    inicio: renderInicio,
+    biblioteca: renderBiblioteca,
+    mapa: renderMapa,
+    quiz: renderQuiz,
+    mensajes: renderMensajes,
+    perfil: renderPerfil
+  })[tab]();
+  document.getElementById('main').scrollTop = 0;
+  updateHeader();
+}
+
+function renderNav(){
+  const items = [
+    ['inicio','home','Inicio'],
+    ['biblioteca','library','Biblioteca'],
+    ['mapa','compass','Brújula'],
+    ['quiz','gamepad','Juegos & R+J']
+  ];
+  document.querySelectorAll('.nav-btn').forEach((b,i) => {
+    const [tab, icon, label] = items[i];
+    b.classList.toggle('on', tab === S.tab);
+    b.innerHTML = `${ic(icon,'w-5 h-5')}<span>${label}</span>`;
+  });
+}
+
+function updateHeader(){
+  const streakEl = document.getElementById('streak-n');
+  if(streakEl) streakEl.textContent = S.user.streak;
+  const C = 2 * Math.PI * 15;
+  const r = document.getElementById('hdr-ring');
+  if(r){
+    r.setAttribute('stroke-dasharray', C);
+    r.setAttribute('stroke-dashoffset', C * (1 - pctRead()/100));
+  }
+}
+
+function toggleTheme(){
+  S.dark = !S.dark;
+  document.documentElement.classList.toggle('dark', S.dark);
+  document.getElementById('theme-btn').innerHTML = ic(S.dark ? 'sun' : 'moon', 'w-4 h-4');
+}
+
+function renderInicio(){
+  const el = document.getElementById('v-inicio');
+
+  const feedSwitch = `
+    <div class="sticky top-0 z-10 flex items-center justify-center gap-6 py-2 border-b backdrop-blur-md"
+         style="background:rgba(252,250,248,0.92); border-color:var(--line);">
+      <button onclick="setFeedMode('notas')" class="text-xs font-black tracking-wider uppercase transition relative py-1 ${S.feedMode==='notas'?'text-rose-900 dark:text-rose-400':'text-stone-400'}">
+        <span>📜 Notas & Quedadas</span>
+        ${S.feedMode==='notas'?'<span class="absolute bottom-0 inset-x-0 h-0.5 bg-rose-800 rounded-full"></span>':''}
+      </button>
+      <button onclick="setFeedMode('reels')" class="text-xs font-black tracking-wider uppercase transition relative py-1 ${S.feedMode==='reels'?'text-rose-900 dark:text-rose-400':'text-stone-400'}">
+        <span>🎬 Para ti (Vídeos)</span>
+        ${S.feedMode==='reels'?'<span class="absolute bottom-0 inset-x-0 h-0.5 bg-rose-800 rounded-full"></span>':''}
+      </button>
+    </div>`;
+
+  if(S.feedMode === 'reels'){
+    const reelsHtml = `
+      <div class="reels-container hide-sb">
+        ${REELS.map((r, idx) => {
+          const u = THREADS[r.user] || USERS_DATA[r.user];
+          const b = bookOf(r.book);
+          const isLiked = S.liked[r.id];
+          return `
+          <div class="reel-slide relative flex flex-col justify-end p-5 overflow-hidden text-white"
+               style="background:linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(10,12,18,0.92) 80%), url('${r.videoBg}') center/cover no-repeat;">
+
+            <div class="absolute top-3 inset-x-4 flex justify-between items-center z-20">
+              <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-black/40 backdrop-blur-md">Reel ${idx + 1} de ${REELS.length} · Desliza ↑</span>
+              <button onclick="showBookDetail(${b.id})" class="text-xs font-semibold text-amber-300 underline">★ ${b.r} Comprar libro</button>
+            </div>
+
+            <div class="absolute right-4 bottom-16 flex flex-col items-center gap-3.5 z-20">
+              <button onclick="likeReel('${r.id}')" class="flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center transition-transform active:scale-90" style="color:${isLiked?'var(--rose)':'#fff'}">
+                  ${ic('heart','w-6 h-6',!!isLiked)}
+                </div>
+                <span class="text-[11px] font-bold mt-1 shadow-sm">${S.likes[r.id] || r.likes}</span>
+              </button>
+
+              <button onclick="openWhisper('${r.user}', ${b.id}, null)" class="flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg active:scale-90" style="background:linear-gradient(135deg,var(--maroon),#D85A38)">
+                  ${ic('spark','w-5 h-5')}
+                </div>
+                <span class="text-[10px] font-bold mt-1 shadow-sm">Susurrar</span>
+              </button>
+
+              <button onclick="openChat('${r.user}')" class="flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white active:scale-90">
+                  ${ic('msg','w-5 h-5')}
+                </div>
+                <span class="text-[10px] font-bold mt-1 shadow-sm">Chat</span>
+              </button>
+            </div>
+
+            <div class="relative z-10 pr-16 space-y-2 pb-2">
+              <div class="flex items-center gap-2">
+                <img src="${u.photo}" class="w-10 h-10 rounded-full object-cover border-2 border-amber-400 shadow-md" />
+                <div>
+                  <span class="text-sm font-bold block leading-tight">@${u.name.toLowerCase().replace(' ','_')}</span>
+                  <span class="text-[10px] px-2 py-0.2 rounded-full bg-white/20 backdrop-blur-sm">${u.af || 95}% complicidad</span>
+                </div>
+              </div>
+              <p class="serif text-base sm:text-lg leading-snug font-medium text-stone-100">"${esc(r.quote)}"</p>
+              
+              ${r.triggerQuestion ? `
+                <div class="p-2.5 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 text-xs text-amber-200 flex items-center justify-between cursor-pointer active:scale-95 transition"
+                     onclick="openWhisper('${r.user}', ${b.id}, null)">
+                  <span class="font-bold">❓ ${esc(r.triggerQuestion)}</span>
+                  <span class="underline text-[10px] font-bold shrink-0 ml-2">Romper el hielo →</span>
+                </div>
+              ` : ''}
+
+              <div class="flex items-center gap-2 text-xs text-stone-300 pt-0.5">
+                <span class="font-semibold text-amber-300 cursor-pointer" onclick="showBookDetail(${b.id})">📖 ${esc(b.t)}</span>
+                <span>· ${esc(b.a)}</span>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+
+    el.innerHTML = feedSwitch + reelsHtml;
+  } else {
+    const stories = `
+      <div class="px-4 py-3 flex gap-3.5 overflow-x-auto hide-sb border-b" style="border-color:var(--line)">
+        <button class="flex flex-col items-center gap-1 shrink-0" onclick="go('perfil')">
+          <div class="w-13 h-13 rounded-full p-[2px] relative" style="background:linear-gradient(135deg,var(--maroon),var(--gold))">
+            <img src="${S.user.photo}" alt="Kur-ko" class="w-12 h-12 rounded-full object-cover" />
+            <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-stone-900 rounded-full"></span>
+          </div>
+          <span class="text-[11px] font-medium">Tú</span>
+        </button>
+        ${Object.entries(THREADS).filter(([id]) => id !== 'kurko').map(([id, t]) => `
+          <button class="flex flex-col items-center gap-1 shrink-0" onclick="openWhisper('${id}', 1, 142)">
+            <div class="w-13 h-13 rounded-full p-[2px]" style="background:linear-gradient(135deg,#A11B35,#D4A03D)">
+              <img src="${t.photo}" alt="${t.name}" class="w-12 h-12 rounded-full object-cover" />
+            </div>
+            <span class="text-[11px]" style="color:var(--muted)">${t.af}% afín</span>
+          </button>
+        `).join('')}
+      </div>`;
+
+    const feedHtml = FEED_ITEMS.map(item => {
+      if(item.type === 'event'){
+        const isBooked = S.eventsBooked[item.id];
+        return `
+          <article class="p-4 border-b space-y-2" style="border-color:var(--line)">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-[10px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full ticket-badge flex items-center gap-1">
+                🎟️ EVENTO PRESENCIAL & QUEDADA
+              </span>
+              <span class="text-[10px] font-extrabold text-amber-700 dark:text-amber-400">Verificado Book Affinity</span>
+            </div>
+
+            <div class="event-ticket-card p-4 space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <span class="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300 tracking-wider">📅 ${item.date}</span>
+                  <h3 class="serif font-bold text-lg leading-tight text-stone-950 dark:text-stone-100">${item.title}</h3>
+                  <p class="text-xs text-amber-900/80 dark:text-amber-200/80 font-medium flex items-center gap-1">
+                    📍 ${item.venue}
+                  </p>
+                </div>
+                <img src="${item.img}" class="w-20 h-20 rounded-xl object-cover shrink-0 shadow-md border border-amber-300/40" />
+              </div>
+
+              <p class="text-xs leading-relaxed text-stone-700 dark:text-stone-300">
+                ${item.desc}
+              </p>
+
+              <div class="border-t border-dashed border-amber-300 dark:border-stone-700 pt-3 flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] uppercase font-bold text-stone-500 block">Aforo disponible</span>
+                  <span class="text-xs font-black text-amber-800 dark:text-amber-300">Quedan ${item.spotsLeft} plazas</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="btn-ghost text-xs px-3 py-1.5" onclick="S.mapPin='cafe1';go('mapa')">Ver en Waze 🗺️</button>
+                  <button class="${isBooked?'btn-ghost text-xs':'btn text-xs'}" onclick="bookEvent('${item.id}')">
+                    ${isBooked ? 'Apuntado ✓ (Cancelar)' : 'Reservar plaza gratis'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>`;
+      } else if(item.type === 'quote'){
+        const b = bookOf(item.book);
+        const t = THREADS[item.id] || USERS_DATA[item.id] || { name: item.author || 'Lector', photo: S.user.photo, af: 95 };
+        const isLiked = S.liked[item.postId];
+        const likesCount = S.likes[item.postId] !== undefined ? S.likes[item.postId] : (item.likes || 0);
+
+        return `
+          <article class="p-4 border-b space-y-2.5" style="border-color:var(--line)">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <img src="${t.photo}" class="w-9 h-9 rounded-full object-cover border-2 border-stone-800 shadow-sm" />
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold">${esc(t.name)}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded font-bold" style="background:var(--maroon-soft);color:var(--maroon)">${t.af || 95}% complicidad</span>
+                  </div>
+                  <p class="text-[10px]" style="color:var(--muted)">📖 Subrayado personal · ${item.place} · ${item.time}</p>
+                </div>
+              </div>
+              <button class="chip text-[10px]" onclick="showBookDetail(${b.id})">★ ${b.r} · Comprar</button>
+            </div>
+
+            <div class="note-moleskine-card p-4 space-y-2.5">
+              <div class="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
+                <span>📖 ${esc(b.t)} · ${esc(b.a)}</span>
+                ${item.page ? `<span class="px-2 py-0.5 rounded bg-stone-200 dark:bg-stone-700">Pág. ${item.page}</span>` : ''}
+              </div>
+
+              <p class="quote text-base sm:text-lg leading-relaxed text-stone-900 dark:text-stone-100 pl-2 border-l-2 border-amber-600">
+                "${esc(item.q)}"
+              </p>
+
+              ${item.noteReflection ? `
+                <div class="bg-black/5 dark:bg-white/5 rounded-xl p-2.5 text-xs text-stone-600 dark:text-stone-300">
+                  <span class="font-bold text-[10px] block text-stone-500 uppercase">Anotación al margen:</span>
+                  ${esc(item.noteReflection)}
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex items-center gap-3">
+                <button class="flex items-center gap-1 text-xs font-bold" onclick="likePost('${item.postId}')" style="color:${isLiked?'var(--rose)':'var(--muted)'}">
+                  ${ic('heart','w-4 h-4',!!isLiked)} <span>${likesCount}</span>
+                </button>
+                <button class="flex items-center gap-1 text-xs font-bold" style="color:var(--muted)" onclick="openChat('${item.id==='kurko'?'laura':item.id}')">
+                  ${ic('msg','w-4 h-4')} Responder nota
+                </button>
+              </div>
+              <button class="btn text-xs" onclick="openWhisper('${item.id==='kurko'?'laura':item.id}', ${b.id}, ${item.page||0})">
+                ${ic('spark','w-3.5 h-3.5')} Susurrar a la cita
+              </button>
+            </div>
+          </article>`;
+      } else if(item.type === 'photo'){
+        const b = bookOf(item.book);
+        const t = THREADS[item.id] || USERS_DATA[item.id] || { name: item.author || 'Lector', photo: S.user.photo, af: 94 };
+        const isLiked = S.liked[item.postId];
+        const likesCount = S.likes[item.postId] !== undefined ? S.likes[item.postId] : (item.likes || 0);
+
+        return `
+          <article class="p-4 border-b space-y-2.5" style="border-color:var(--line)">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <img src="${t.photo}" class="w-9 h-9 rounded-full object-cover border-2 shadow-sm" />
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold">${esc(t.name)}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded font-bold" style="background:var(--maroon-soft);color:var(--maroon)">${t.af || 94}% complicidad</span>
+                  </div>
+                  <p class="text-[10px]" style="color:var(--muted)">📸 Momento lector · ${item.place} · ${item.time}</p>
+                </div>
+              </div>
+              <button class="chip text-[10px]" onclick="showBookDetail(${b.id})">📖 Ver obra</button>
+            </div>
+
+            <div class="rounded-2xl overflow-hidden border shadow-sm" style="border-color:var(--line)">
+              <img src="${item.img}" class="w-full h-64 object-cover" />
+              <div class="p-3.5 space-y-1" style="background:var(--card)">
+                <p class="text-xs font-medium leading-relaxed" style="color:var(--ink)">"${esc(item.caption)}"</p>
+                ${item.noteReflection ? `<p class="text-[11px] text-stone-500 italic">💭 "${esc(item.noteReflection)}"</p>` : ''}
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex items-center gap-3">
+                <button class="flex items-center gap-1 text-xs font-bold" onclick="likePost('${item.postId}')" style="color:${isLiked?'var(--rose)':'var(--muted)'}">
+                  ${ic('heart','w-4 h-4',!!isLiked)} <span>${likesCount}</span>
+                </button>
+                <button class="flex items-center gap-1 text-xs font-bold" style="color:var(--muted)" onclick="openChat('${item.id==='kurko'?'sofia':item.id}')">
+                  ${ic('msg','w-4 h-4')} Comentar
+                </button>
+              </div>
+              <button class="btn text-xs" onclick="openWhisper('${item.id==='kurko'?'sofia':item.id}', ${b.id}, null)">
+                ${ic('spark','w-3.5 h-3.5')} Susurrar
+              </button>
+            </div>
+          </article>`;
+      }
+    }).join('');
+
+    el.innerHTML = feedSwitch + stories + feedHtml;
+  }
+}
+
+function setFeedMode(mode){
+  S.feedMode = mode;
+  renderInicio();
+}
+
+async function bookEvent(id) {
+  const isCurrentlyBooked = !!S.eventsBooked[id];
+  const willBook = !isCurrentlyBooked;
+
+  // 1. Actualizamos inmediatamente el estado visual (UI optimista)
+  S.eventsBooked[id] = willBook;
+  toast(willBook ? '¡Plaza reservada para la quedada! Te hemos enviado el ticket 🎟️' : 'Has cancelado tu reserva.');
+  renderInicio();
+
+  // 2. Sincronizamos las plazas en Supabase si tenemos el evento activo cargado
+  if (S.featuredEvent) {
+    const cambio = willBook ? -1 : 1;
+    const nuevoAforo = Math.max(0, (S.featuredEvent.spots_left ?? 4) + cambio);
+
+    try {
+      const { error } = await sbClient
+        .from('events')
+        .update({ spots_left: nuevoAforo })
+        .eq('id', S.featuredEvent.id);
+
+      if (error) {
+        console.error('Error al actualizar plazas en Supabase:', error.message);
+      } else {
+        S.featuredEvent.spots_left = nuevoAforo;
+        console.log('Plazas actualizadas en Supabase:', nuevoAforo);
+        renderInicio();
+      }
+    } catch (err) {
+      console.error('Error de red al actualizar reserva:', err);
+    }
+  }
+}
+
+async function likePost(postId){
+    // 1. Alternar estado (dar like o quitar like)
+    S.liked[postId] = !S.liked[postId];
+
+    // 2. Determinar contador actual del post
+    const currentPost = (typeof FEED_ITEMS !== 'undefined') 
+        ? FEED_ITEMS.find(i => i.postId === postId) 
+        : null;
+    const baseLikes = S.likes[postId] !== undefined 
+        ? S.likes[postId] 
+        : (currentPost ? (currentPost.likes || 0) : 0);
+
+    const newLikes = Math.max(0, baseLikes + (S.liked[postId] ? 1 : -1));
+    S.likes[postId] = newLikes;
+    if (currentPost) currentPost.likes = newLikes;
+
+    // 3. Actualización optimista inmediata en pantalla
+    renderInicio();
+
+    // 4. Persistencia en la tabla 'notes' de Supabase
+    try {
+        const { error } = await sbClient
+            .from('notes')
+            .update({ likes_count: newLikes })
+            .eq('id', postId);
+
+        if (error) {
+            console.error('Error al actualizar like en Supabase:', error.message);
+        } else {
+            console.log(`Like persistido en Supabase para ${postId}:`, newLikes);
+        }
+    } catch (err) {
+        console.error('Fallo de conexión al dar like:', err);
+    }
+}
+
+function likeReel(id){
+  S.liked[id] = !S.liked[id];
+  S.likes[id] = (S.likes[id] || 0) + (S.liked[id] ? 1 : -1);
+  renderInicio();
+}
+
+function renderBiblioteca(){
+  let list = BOOKS.filter(b => {
+    const matchFilter = S.filter === 'all' || (S.filter === 'top' ? b.r >= 9.0 : b.g.toLowerCase().includes(S.filter));
+    const matchQuery = !S.q || (b.t + ' ' + b.a).toLowerCase().includes(S.q.toLowerCase());
+    return matchFilter && matchQuery;
+  });
+  if(S.filter === 'top') list.sort((a,b) => b.r - a.r);
+
+  const filters = [
+    ['all','Todos los fondos'],
+    ['top','Top Book Affinity (★ 9+)'],
+    ['ficción','Ficción'],
+    ['cuentos','Cuentos'],
+    ['realismo','Realismo Mágico'],
+    ['distopía','Distopía']
+  ];
+
+  document.getElementById('v-biblioteca').innerHTML = `
+    <div class="p-4 space-y-3 sticky top-0 z-10" style="background:var(--surface)">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="serif text-xl font-bold flex items-center gap-2">
+            ${ic('library','w-5 h-5 text-amber-700')} Biblioteca Central
+          </h2>
+          <p class="text-xs" style="color:var(--muted)">Catálogo, notas críticas, sinopsis y compras</p>
+        </div>
+      </div>
+      <div class="relative">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--muted)">${ic('search','w-4 h-4')}</span>
+        <input id="fa-q" value="${esc(S.q)}" oninput="S.q=this.value;renderBiblioteca();document.getElementById('fa-q').focus()" placeholder="Buscar por título, autor o género..."
+          class="w-full rounded-xl pl-9 pr-3 py-2 text-xs outline-none" style="background:var(--card);border:1px solid var(--line);color:var(--ink)">
+      </div>
+      <div class="flex gap-1.5 overflow-x-auto hide-sb pb-1">
+        ${filters.map(([k,l]) => `<button class="chip ${S.filter===k?'on':''}" onclick="S.filter='${k}';renderBiblioteca()">${l}</button>`).join('')}
+      </div>
+    </div>
+
+    <div class="px-4 pb-6 space-y-3">
+      ${list.map(b => {
+        const myVote = S.myRatings[b.id];
+        return `
+        <div class="card p-3 flex gap-3 cursor-pointer hover:border-rose-900 transition" onclick="showBookDetail(${b.id})">
+          <div class="w-16 h-24 rounded-lg flex flex-col justify-end p-2 text-white serif font-bold text-[10px] leading-tight shrink-0 shadow-sm"
+            style="background:linear-gradient(145deg,${b.c1},${b.c2})">
+            ${esc(b.t)}
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-1">
+                <h3 class="font-bold text-sm truncate">${esc(b.t)}</h3>
+                <span class="text-xs font-extrabold serif shrink-0" style="color:var(--gold)">★ ${b.r}</span>
+              </div>
+              <p class="text-xs" style="color:var(--muted)">${esc(b.a)} · <span class="italic">${b.g}</span></p>
+              <p class="text-[11px] line-clamp-2 mt-1 text-stone-600 dark:text-stone-400 leading-snug">${b.synopsis}</p>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t mt-2" style="border-color:var(--line)">
+              <span class="text-[10px] font-bold text-amber-700">Comprar: ${b.price}</span>
+              <span class="text-[10px] font-bold" style="color:${myVote?'var(--maroon)':'var(--muted)'}">
+                ${myVote ? 'Tu nota: ★ ' + myVote : 'Ver sinopsis y votar →'}
+              </span>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function showBookDetail(id){
+  const b = bookOf(id);
+  if (!b) return;
+
+  // Fallback seguro: si el libro de la base de datos no trae distribución, asignamos una por defecto
+  const dist = (Array.isArray(b.dist) && b.dist.length === 10) 
+    ? b.dist 
+    : [2, 1, 3, 5, 8, 12, 20, 25, 18, 6];
+
+  const totalVotes = b.votes !== undefined ? b.votes : 1240;
+
+  document.getElementById('mb-genre').textContent = b.g || 'Literatura';
+  document.getElementById('mb-title').textContent = b.t || 'Sin título';
+  document.getElementById('mb-author').textContent = b.a || 'Autor anónimo';
+  document.getElementById('mb-rating').textContent = b.r || '9.0';
+  document.getElementById('mb-votes').textContent = `${Number(totalVotes).toLocaleString()} lecturas evaluadas`;
+  document.getElementById('mb-synopsis').textContent = b.synopsis || 'Sin sinopsis disponible.';
+  document.getElementById('mb-price').textContent = b.price || '12,95 €';
+
+  const myVote = (typeof S !== 'undefined' && S.myRatings) ? S.myRatings[b.id] : null;
+  document.getElementById('mb-my-rating').textContent = myVote ? `★ ${myVote}/10` : 'Sin puntuar';
+
+  // Usamos el array seguro 'dist' en lugar de 'b.dist'
+  const maxPct = Math.max(...dist, 1);
+  const barsEl = document.getElementById('mb-bars');
+  if (barsEl) {
+    barsEl.innerHTML = dist.map((pct, idx) => {
+      const h = Math.round((pct / maxPct) * 100);
+      const isMyRating = myVote === (idx + 1);
+      return `
+        <div class="flex-1 flex flex-col items-center h-full justify-end group">
+          <div class="w-full rounded-t transition-all duration-300"
+            style="height:${h}%; background:${isMyRating ? 'var(--maroon)' : (idx >= 7 ? 'var(--gold)' : 'var(--line)')}"></div>
+        </div>`;
+    }).join('');
+  }
+
+  const starsEl = document.getElementById('mb-stars');
+  if (starsEl) {
+    starsEl.innerHTML = Array.from({length:10}, (_, i) => i+1).map(n => `
+      <button onclick="rateBook(${b.id}, ${n})" class="flex-1 py-1.5 rounded text-xs font-bold border transition"
+        style="background:${myVote === n ? 'var(--maroon)' : 'var(--card)'}; color:${myVote === n ? '#fff' : 'var(--ink)'}; border-color:${myVote === n ? 'var(--maroon)' : 'var(--line)'}">
+        ${n}
+      </button>
+    `).join('');
+  }
+
+  const matchBox = document.getElementById('mb-match-box');
+  if (matchBox) {
+    matchBox.innerHTML = `
+      <div class="font-bold flex items-center gap-1.5" style="color:var(--maroon)">
+        ${ic('spark','w-4 h-4')} Conexión de complicidad Book Affinity
+      </div>
+      <p>A perfiles lectores afines de tu radar les fascina esta obra. ¡Coméntala para romper el hielo!</p>
+      <div class="pt-1">
+        <button class="btn w-full" onclick="closeBookModal(); openWhisper('laura', ${b.id}, null)">Susurrar a alguien sobre este libro</button>
+      </div>`;
+  }
+
+  const modalEl = document.getElementById('modal-book');
+  if (modalEl) {
+    modalEl.classList.remove('hidden');
+  }
+}
+
+function buyBookAction(partner){
+  toast(`Redirigiendo a ${partner} (enlace patrocinado) 📖`);
+}
+
+function closeBookModal(){
+  document.getElementById('modal-book').classList.add('hidden');
+}
+
+async function rateBook(bookId, score){
+  const activeUser = (typeof S !== 'undefined' && S.user && S.user.name) ? S.user.name.toLowerCase() : 'kurko';
+
+  // 1. Actualización inmediata en pantalla (optimista)
+  S.myRatings[bookId] = score;
+  toast(`Has calificado con ${score}/10.`);
+  showBookDetail(bookId);
+  renderBiblioteca();
+
+  // 2. Persistencia en Supabase mediante UPSERT
+  try {
+    const { data, error } = await sbClient
+      .from('book_ratings')
+      .upsert(
+        { user_id: activeUser, book_id: bookId, rating: score },
+        { onConflict: 'user_id,book_id' }
+      );
+
+    if (error) {
+      console.error('Error al guardar calificación en Supabase:', error.message);
+    } else {
+      console.log(`Calificación ${score}/10 guardada para libro ${bookId} en Supabase`);
+    }
+  } catch (err) {
+    console.error('Fallo de conexión al calificar libro:', err);
+  }
+}
+
+function renderMapa(){
+  const allPins = [
+    { 
+      id:'kurko', type:'user', x:48, y:50, label:'Tú (Kur-ko)', 
+      status:'Leyendo Tokio Blues · 42 pág/h', speed:'En banco de plaza',
+      photo:USERS_DATA.kurko.photo, isMe:true 
+    },
+    { 
+      id:'laura', type:'user', x:32, y:28, label:'Laura · 96%', 
+      status:'Leyendo en Café La Central', speed:'450 m · 6 min a pie',
+      photo:USERS_DATA.laura.photo, book:'Tokio Blues'
+    },
+    { 
+      id:'sofia', type:'user', x:76, y:36, label:'Sofía · 94%', 
+      status:'Explorando Caseta 12 de Moyano', speed:'1.1 km · 14 min',
+      photo:USERS_DATA.sofia.photo, book:'Cien años de soledad'
+    },
+    { 
+      id:'marcos', type:'user', x:66, y:68, label:'Marcos · 88%', 
+      status:'Leyendo en Librería Tipos Móviles', speed:'820 m · 10 min',
+      photo:USERS_DATA.marcos.photo, book:'1984'
+    },
+    { 
+      id:'cafe1', type:'event', x:58, y:38, label:'Cita a Ciegas (Quedada)', 
+      status:'Café La Buena Vida · Sábado 18:30 h', desc:'Evento oficial con 4 plazas libres. ¡Ven con tu libro!',
+      photo:'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=150&q=80',
+      badge:'QUEDADA ACTIVA'
+    },
+    { 
+      id:'cafe2', type:'event', x:26, y:62, label:'Club de Vino & Debate', 
+      status:'Vinoteca La Fisna · Jueves 20:00 h', desc:'Debate sobre finales literarios con vino tinto.',
+      photo:'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=150&q=80',
+      badge:'DEBATE NOCTURNO'
+    },
+    { 
+      id:'spot1', type:'spot', x:42, y:76, label:'Librería Mujeres & Compañía', 
+      status:'Librería independiente con rincón de lectura', desc:'Descuento 5% para usuarios Book Affinity.',
+      photo: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=150'
+    }
+  ];
+
+  const filteredPins = allPins.filter(p => {
+    if(S.mapFilter === 'readers') return p.type === 'user';
+    if(S.mapFilter === 'events') return p.type === 'event';
+    if(S.mapFilter === 'spots') return p.type === 'spot';
+    return true;
+  });
+
+  const curPin = allPins.find(p => p.id === S.mapPin) || allPins[0];
+
+  document.getElementById('v-mapa').innerHTML = `
+    <div class="p-3 border-b flex flex-col gap-2 sticky top-0 z-20 shadow-sm" style="background:var(--surface); border-color:var(--line)">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-sm">
+            🧭
+          </div>
+          <div>
+            <span class="text-xs font-bold block leading-tight">Brújula Literaria · Madrid Centro</span>
+            <span class="text-[10px]" style="color:var(--muted)">Comunidad lectora, tertulias y librerías asociadas</span>
+          </div>
+        </div>
+        <button onclick="recenterWazeMap()" class="chip text-[10px] py-1">🧭 Mi posición</button>
+      </div>
+
+      <div class="flex gap-1.5 overflow-x-auto hide-sb">
+        <button onclick="setMapFilter('all')" class="chip ${S.mapFilter==='all'?'on':''}">Todos (7)</button>
+        <button onclick="setMapFilter('readers')" class="chip ${S.mapFilter==='readers'?'on':''}">👥 Lectoras (4)</button>
+        <button onclick="setMapFilter('events')" class="chip ${S.mapFilter==='events'?'on':''}">🎟️ Quedadas (2)</button>
+        <button onclick="setMapFilter('spots')" class="chip ${S.mapFilter==='spots'?'on':''}">📍 Librerías & Cafés (1)</button>
+      </div>
+    </div>
+
+    <div class="waze-map-wrapper relative">
+      <svg viewBox="0 0 500 470" class="w-full h-full pointer-events-none">
+        <rect x="20" y="30" width="110" height="90" rx="14" fill="#D2E3D4" opacity="0.6"/>
+        <rect x="170" y="40" width="140" height="110" rx="16" fill="#EAE3D9" opacity="0.7"/>
+        <rect x="340" y="30" width="130" height="130" rx="16" fill="#D2E3D4" opacity="0.6"/>
+        <rect x="40" y="190" width="120" height="130" rx="14" fill="#EAE3D9" opacity="0.7"/>
+        <rect x="210" y="210" width="120" height="140" rx="14" fill="#D2E3D4" opacity="0.5"/>
+        <rect x="360" y="230" width="110" height="120" rx="14" fill="#EAE3D9" opacity="0.7"/>
+        
+        <line x1="0" y1="165" x2="500" y2="165" class="waze-highway"/>
+        <line x1="160" y1="0" x2="160" y2="470" class="waze-road-main"/>
+        <line x1="330" y1="0" x2="330" y2="470" class="waze-road-main"/>
+        <line x1="0" y1="360" x2="500" y2="360" class="waze-road-main"/>
+        
+        <line x1="0" y1="80" x2="500" y2="80" class="waze-road-sec"/>
+        <line x1="0" y1="260" x2="500" y2="260" class="waze-road-sec"/>
+        <line x1="240" y1="0" x2="240" y2="470" class="waze-road-sec"/>
+
+        <text x="20" y="160" font-size="9" font-weight="bold" fill="#888">GRAN VÍA LITERARIA</text>
+        <text x="340" y="20" font-size="8" font-weight="bold" fill="#888">C/ CERVANTES</text>
+        <text x="20" y="355" font-size="8" font-weight="bold" fill="#888">PASEO DE LAS LETRAS</text>
+      </svg>
+
+      ${filteredPins.map(p => `
+        <div class="waze-pin" style="left:${p.x}%; top:${p.y}%;" onclick="selectWazePin('${p.id}')">
+          <div class="relative flex flex-col items-center">
+            ${p.isMe ? '<div class="waze-pulse"></div>' : ''}
+            <div class="w-11 h-11 rounded-full border-2 shadow-2xl p-0.5 transition-transform"
+                 style="background:var(--card); border-color:${p.isMe?'#00d2ff':(p.type==='event'?'#D4A03D':'var(--maroon)')};">
+              <img src="${p.photo}" class="w-full h-full rounded-full object-cover"/>
+            </div>
+            <div class="px-2 py-0.5 rounded-full text-[9px] font-extrabold mt-1 shadow-md whitespace-nowrap flex items-center gap-1"
+                 style="background:${p.type==='event'?'#D4A03D':(p.isMe?'#00d2ff':'#1B1816')}; color:${p.type==='event'||p.isMe?'#000':'#FFF'};">
+              <span>${p.label}</span>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+
+      <div class="absolute top-3 right-3 bg-white/80 dark:bg-black/60 backdrop-blur-md rounded-full p-2 shadow-md">
+        <span class="text-xs font-black text-rose-800">N ↑</span>
+      </div>
+    </div>
+
+    <div class="p-4">
+      <div class="card p-4 space-y-3 shadow-lg border-2" style="border-color:${curPin.type==='event'?'#D4A03D':'var(--maroon)'}">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <img src="${curPin.photo}" class="w-12 h-12 rounded-2xl object-cover border-2 shadow-sm" style="border-color:${curPin.type==='event'?'#D4A03D':'var(--maroon)'}"/>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-sm leading-tight">${curPin.label}</h3>
+                ${curPin.badge ? `<span class="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900">${curPin.badge}</span>` : ''}
+              </div>
+              <p class="text-xs font-semibold mt-0.5" style="color:var(--maroon)">${curPin.status}</p>
+              <p class="text-[11px]" style="color:var(--muted)">${curPin.speed || curPin.desc || 'En tu radio de afinidad'}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-1 flex gap-2">
+          ${curPin.type === 'event' ? `
+            <button class="btn flex-1 text-xs py-2.5 font-bold" onclick="bookEvent('${curPin.id}')">
+              ${S.eventsBooked[curPin.id] ? 'Apuntado ✓ (Cancelar)' : 'Reservar plaza en este evento'}
+            </button>
+            <button class="btn-ghost text-xs px-3" onclick="toast('Ruta en tiempo real calculada: 8 min a pie')">Cómo llegar</button>
+          ` : (curPin.isMe ? `
+            <button class="btn-ghost w-full text-xs py-2" onclick="toast('Tu estado se emite para lectoras en 1.5 km')">Transmitiendo estado en vivo 📡</button>
+          ` : `
+            <button class="btn flex-1 text-xs py-2.5 font-bold" onclick="openWhisper('${curPin.id}', 1, 142)">
+              Citarse aquí en directo ☕
+            </button>
+            <button class="btn-ghost text-xs px-3" onclick="openChat('${curPin.id}')">Chat</button>
+          `)}
+        </div>
+      </div>
+    </div>`;
+}
+
+function setMapFilter(f){
+  S.mapFilter = f;
+  renderMapa();
+}
+
+function selectWazePin(id){
+  S.mapPin = id;
+  renderMapa();
+}
+
+function recenterWazeMap(){
+  S.mapPin = 'kurko';
+  toast('Mapa centrado en tu posición actual 📍');
+  renderMapa();
+}
+
+function renderQuiz(){
+  const el = document.getElementById('v-quiz');
+
+  if(S.quizScreen === 'hub'){
+    el.innerHTML = `
+      <div class="p-4 space-y-4">
+        <div class="flex items-center justify-between border-b pb-3" style="border-color:var(--line)">
+          <div>
+            <h2 class="serif text-xl font-bold flex items-center gap-2">
+              <span class="text-rose-800">🎯</span> Sala de Juegos & R+J
+            </h2>
+            <p class="text-xs" style="color:var(--muted)">Encuentra afinidades o desafía tu mente</p>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] font-bold uppercase tracking-wider block" style="color:var(--muted)">Tu puntuación</span>
+            <span class="font-extrabold text-sm" style="color:var(--maroon)">🏆 ${S.quizScore} pts</span>
+          </div>
+        </div>
+
+        <div class="card p-5 space-y-3 shadow-lg relative overflow-hidden cursor-pointer border-2"
+             style="background:linear-gradient(135deg, #1C1117 0%, #38121D 100%); border-color:var(--maroon);"
+             onclick="openQuizGame('rj')">
+          <div class="absolute -right-6 -bottom-6 text-8xl opacity-15 pointer-events-none">💘</div>
+          <div class="flex items-center justify-between text-white">
+            <span class="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-rose-950/80 border border-rose-500/40 text-rose-300">
+              Romeo y Julieta (R+J)
+            </span>
+            <span class="text-xs font-bold text-amber-300">★ Dating de Complicidad</span>
+          </div>
+          <div class="text-white space-y-1">
+            <h3 class="serif text-xl font-bold">Encuentra a tu Complicidad Lectora</h3>
+            <p class="text-xs text-stone-300 leading-relaxed">
+              Define tu personalidad respondiendo dilemas y desliza perfiles estilo Tinder (👉 Me interesa / 👈 Pasar).
+            </p>
+          </div>
+          <div class="pt-1 flex items-center justify-between">
+            <div class="flex -space-x-2">
+              <img src="${USERS_DATA.laura.photo}" class="w-7 h-7 rounded-full border-2 border-stone-900 object-cover"/>
+              <img src="${USERS_DATA.clara.photo}" class="w-7 h-7 rounded-full border-2 border-stone-900 object-cover"/>
+              <img src="${USERS_DATA.sofia.photo}" class="w-7 h-7 rounded-full border-2 border-stone-900 object-cover"/>
+            </div>
+            <button class="btn text-xs font-bold px-4 py-2 shadow-lg" style="background:linear-gradient(135deg,#D85A38,var(--maroon))">
+              Entrar a R+J →
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div class="card p-3.5 space-y-2 cursor-pointer hover:border-rose-900 transition flex flex-col justify-between"
+               onclick="openQuizGame('apalabrados')">
+            <div>
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base mb-1.5" style="background:var(--maroon-soft); color:var(--maroon)">🅰️</div>
+              <h3 class="font-bold text-xs">Apalabrados</h3>
+              <p class="text-[10px] leading-snug mt-0.5" style="color:var(--muted)">Forma palabras con letras del atril y reta a otros lectores.</p>
+            </div>
+            <span class="text-[10px] font-bold text-amber-700 block">Jugar turno →</span>
+          </div>
+
+          <div class="card p-3.5 space-y-2 cursor-pointer hover:border-rose-900 transition flex flex-col justify-between"
+               onclick="openQuizGame('ahorcado')">
+            <div>
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base mb-1.5 bg-indigo-100 text-indigo-800">🎯</div>
+              <h3 class="font-bold text-xs">El Ahorcado</h3>
+              <p class="text-[10px] leading-snug mt-0.5" style="color:var(--muted)">Adivina la obra o autor clásico antes de agotar vidas.</p>
+            </div>
+            <span class="text-[10px] font-bold text-amber-700 block">Adivinar obra →</span>
+          </div>
+
+          <div class="card p-3.5 space-y-2 cursor-pointer hover:border-rose-900 transition flex flex-col justify-between"
+               onclick="openQuizGame('crucigrama')">
+            <div>
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base mb-1.5 bg-amber-100 text-amber-800">📝</div>
+              <h3 class="font-bold text-xs">Crucigrama</h3>
+              <p class="text-[10px] leading-snug mt-0.5" style="color:var(--muted)">Mini crucigrama temático de narrativa y letras hispanas.</p>
+            </div>
+            <span class="text-[10px] font-bold text-amber-700 block">Completar →</span>
+          </div>
+
+          <div class="card p-3.5 space-y-2 cursor-pointer hover:border-rose-900 transition flex flex-col justify-between"
+               onclick="openQuizGame('microrrelatos')">
+            <div>
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base mb-1.5 bg-emerald-100 text-emerald-800">🎙️</div>
+              <h3 class="font-bold text-xs">Microrrelatos</h3>
+              <p class="text-[10px] leading-snug mt-0.5" style="color:var(--muted)">100 palabras con narración por voz incorporada.</p>
+            </div>
+            <span class="text-[10px] font-bold text-amber-700 block">Escuchar audio →</span>
+          </div>
+        </div>
+      </div>`;
+  } else if(S.quizScreen === 'rj'){
+    if(S.rjStep === 'intro'){
+      el.innerHTML = `
+        <div class="p-5 space-y-5">
+          <div class="flex items-center gap-2">
+            <button class="icon-btn" onclick="openQuizGame('hub')">${ic('back','w-4 h-4')}</button>
+            <h2 class="serif text-xl font-bold">R+J · Romeo y Julieta</h2>
+          </div>
+
+          <div class="card p-6 text-center space-y-4 shadow-sm" style="background:var(--card)">
+            <div class="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center text-3xl shadow-inner" style="background:var(--maroon-soft); color:var(--maroon)">
+              💘
+            </div>
+            <div>
+              <h3 class="serif text-2xl font-bold">¿Quién es tu complicidad lectora?</h3>
+              <p class="text-xs mt-2 leading-relaxed" style="color:var(--muted)">
+                En Book Affinity los subrayados y los hábitos de lectura revelan más sobre la afinidad que cualquier pose.
+              </p>
+            </div>
+
+            <div class="p-3.5 rounded-2xl text-left space-y-2 text-xs" style="background:var(--surface); border:1px solid var(--line)">
+              <div class="flex items-center gap-2 font-bold" style="color:var(--maroon)">
+                <span>⚡</span> ¿Cómo funciona el algoritmo R+J?
+              </div>
+              <p class="text-[11px]" style="color:var(--muted)">1. Responde 4 dilemas rápidos para calibrar tu arquetipo lector.</p>
+              <p class="text-[11px]" style="color:var(--muted)">2. Desliza las fichas de afinidad: <strong>Derecha (Me interesa)</strong> o <strong>Izquierda (Pasar)</strong>.</p>
+              <p class="text-[11px]" style="color:var(--muted)">3. Si hay afinidad mutua, se desbloquea una Complicidad de Lectura inmediata.</p>
+            </div>
+
+            <button class="btn w-full py-3 font-bold text-sm shadow-md" onclick="startRJQuiz()">
+              Comenzar a definirme (${RJ_QUIZ_QUESTIONS.length} preguntas) →
+            </button>
+          </div>
+        </div>`;
+    } else if(S.rjStep === 'quiz'){
+      const q = RJ_QUIZ_QUESTIONS[S.rjCurQuestion];
+      const progress = Math.round(((S.rjCurQuestion + 1) / RJ_QUIZ_QUESTIONS.length) * 100);
+
+      el.innerHTML = `
+        <div class="p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <button class="icon-btn" onclick="S.rjStep='intro';renderQuiz()">${ic('back','w-4 h-4')}</button>
+              <span class="text-xs font-bold uppercase tracking-wider" style="color:var(--maroon)">Perfil R+J</span>
+            </div>
+            <span class="text-xs font-bold" style="color:var(--muted)">${S.rjCurQuestion + 1} de ${RJ_QUIZ_QUESTIONS.length}</span>
+          </div>
+
+          <div class="w-full h-1.5 rounded-full overflow-hidden" style="background:var(--line)">
+            <div class="h-full rounded-full transition-all duration-300" style="width:${progress}%; background:var(--maroon)"></div>
+          </div>
+
+          <div class="card p-5 space-y-3 shadow-sm">
+            <span class="text-[10px] font-black uppercase tracking-widest text-amber-700">Dilema Literario</span>
+            <h3 class="serif text-lg font-bold leading-snug">
+              "${q.q}"
+            </h3>
+          </div>
+
+          <div class="space-y-2.5 pt-1">
+            ${q.opts.map((opt, idx) => `
+              <button onclick="answerRJQuestion(${idx})"
+                class="w-full card p-4 text-left text-xs font-semibold hover:border-rose-900 transition flex items-center justify-between group active:scale-[0.98]">
+                <span class="pr-3 leading-relaxed">${opt.text}</span>
+                <span class="text-stone-400 group-hover:text-rose-800 transition">→</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>`;
+    } else if(S.rjStep === 'matches'){
+      const curUserId = S.rjMatchList[S.rjCrushIndex];
+      const user = USERS_DATA[curUserId];
+
+      if(!user){
+        el.innerHTML = `
+          <div class="p-6 text-center space-y-4">
+            <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl" style="background:var(--maroon-soft)">
+              ✨
+            </div>
+            <h3 class="serif text-xl font-bold">¡Has revisado todos los perfiles de hoy!</h3>
+            <p class="text-xs" style="color:var(--muted)">Has calibrado tu algoritmo R+J. Vuelve mañana para nuevas afinidades o chatea con tus complicidades.</p>
+            <div class="pt-2 space-y-2">
+              <button class="btn w-full" onclick="go('mensajes')">Ver mis chats activos</button>
+              <button class="btn-ghost w-full text-xs" onclick="resetRJDeck()">Volver a revisar perfiles</button>
+            </div>
+          </div>`;
+        return;
+      }
+
+      el.innerHTML = `
+        <div class="p-4 flex flex-col h-full justify-between select-none">
+          <div class="flex items-center justify-between pb-2">
+            <div class="flex items-center gap-2">
+              <button class="icon-btn" onclick="openQuizGame('hub')">${ic('back','w-4 h-4')}</button>
+              <div>
+                <h3 class="serif font-bold text-base leading-tight">R+J Complicidad</h3>
+                <span class="text-[10px] text-amber-700 font-semibold block">Desliza: Derecha (Me interesa) · Izquierda (Pasar)</span>
+              </div>
+            </div>
+            <button class="chip text-[10px]" onclick="S.rjStep='intro';renderQuiz()">⚙️ Mi test</button>
+          </div>
+
+          <div class="relative w-full h-[470px] my-1" id="tinder-card-container">
+            <div id="active-swipe-card" class="tinder-card flex flex-col justify-end text-white"
+                 style="background:linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(10,12,18,0.92) 80%), url('${user.photo}') center/cover no-repeat;">
+
+              <div id="badge-like" class="tinder-badge like">ME INTERESA</div>
+              <div id="badge-nope" class="tinder-badge nope">PASAR</div>
+
+              <div class="p-5 space-y-2 relative z-20">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h2 class="serif text-2xl font-bold flex items-center gap-2">
+                      ${esc(user.name)}
+                      <span class="text-sm font-normal text-stone-300">· ${user.city}</span>
+                    </h2>
+                    <span class="text-xs font-bold text-amber-300">📖 Favorito: ${user.faveBook}</span>
+                  </div>
+                  <div class="px-3 py-1 rounded-full text-xs font-black shadow-lg" style="background:var(--maroon); color:#fff">
+                    ${user.af}% afín
+                  </div>
+                </div>
+
+                <p class="text-xs text-stone-200 leading-relaxed font-normal">
+                  "${esc(user.bio)}"
+                </p>
+
+                <div class="flex gap-1.5 flex-wrap pt-1">
+                  <span class="text-[9px] px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md">🏷️ ${user.tag}</span>
+                  ${S.rjUserTraits.length ? `<span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-200 border border-amber-500/40">Complicidad: ${S.rjUserTraits[0]}</span>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-center gap-6 py-2">
+            <button onclick="triggerSwipeAction('nope')" class="w-14 h-14 rounded-full border-2 border-red-500/60 bg-white dark:bg-stone-900 text-red-500 flex items-center justify-center shadow-lg active:scale-90 transition">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <button onclick="openWhisper('${curUserId}', 1, null)" class="w-11 h-11 rounded-full border border-amber-500/60 bg-amber-50 dark:bg-stone-800 text-amber-600 flex items-center justify-center shadow-md active:scale-90 transition" title="Susurro directo">
+              ✨
+            </button>
+            <button onclick="triggerSwipeAction('like')" class="w-14 h-14 rounded-full border-2 border-emerald-500/60 bg-white dark:bg-stone-900 text-emerald-500 flex items-center justify-center shadow-lg active:scale-90 transition">
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </button>
+          </div>
+        </div>`;
+
+      initTinderGesture();
+    }
+  } else if(S.quizScreen === 'apalabrados'){
+    el.innerHTML = `
+      <div class="p-4 space-y-4">
+        <div class="flex items-center justify-between border-b pb-2" style="border-color:var(--line)">
+          <div class="flex items-center gap-2">
+            <button class="icon-btn" onclick="openQuizGame('hub')">${ic('back','w-4 h-4')}</button>
+            <h2 class="serif text-lg font-bold">Apalabrados Literario</h2>
+          </div>
+          <span class="text-xs font-bold text-rose-800">+45 pts</span>
+        </div>
+
+        <div class="card p-3 flex justify-between items-center text-xs" style="background:var(--maroon-soft)">
+          <div class="flex items-center gap-2">
+            <img src="${USERS_DATA.laura.photo}" class="w-7 h-7 rounded-full object-cover"/>
+            <span>Partida vs <strong>Laura Martínez</strong></span>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-white text-stone-900">Tu turno</span>
+        </div>
+
+        <div class="card p-4 space-y-3">
+          <span class="text-[10px] font-bold uppercase tracking-wider block" style="color:var(--muted)">Palabra en construcción:</span>
+          <div class="h-14 border rounded-xl flex items-center justify-center gap-1.5 px-2 bg-stone-50 dark:bg-stone-900 text-lg font-extrabold tracking-wider"
+               id="ap-board" style="border-color:var(--line)">
+            <span class="text-stone-400 font-normal text-xs">Toca letras de tu atril...</span>
+          </div>
+
+          <span class="text-[10px] font-bold uppercase tracking-wider block pt-2" style="color:var(--muted)">Tu atril de letras:</span>
+          <div class="flex justify-between gap-1" id="ap-rack">
+            ${['M','U','R','A','K','A','M','I'].map(l => `
+              <button onclick="addRackLetter('${l}')" class="w-9 h-11 rounded-lg font-extrabold text-sm border shadow-sm flex flex-col items-center justify-center bg-white dark:bg-stone-800 hover:border-rose-900 transition">
+                <span>${l}</span>
+                <span class="text-[8px] text-stone-400 font-normal">2</span>
+              </button>
+            `).join('')}
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-2">
+            <button class="btn-ghost text-xs" onclick="resetRack()">Limpiar atril</button>
+            <button class="btn text-xs" onclick="submitRackWord()">Validar palabra</button>
+          </div>
+        </div>
+      </div>`;
+  } else if(S.quizScreen === 'crucigrama'){
+    el.innerHTML = `
+      <div class="p-4 space-y-4">
+        <div class="flex items-center justify-between border-b pb-2" style="border-color:var(--line)">
+          <div class="flex items-center gap-2">
+            <button class="icon-btn" onclick="openQuizGame('hub')">${ic('back','w-4 h-4')}</button>
+            <h2 class="serif text-lg font-bold">Mini Crucigrama</h2>
+          </div>
+          <span class="text-xs font-bold text-amber-700">#42 Diario</span>
+        </div>
+        <p class="text-xs" style="color:var(--muted)">Rellena las casillas con las letras correspondientes:</p>
+        <div class="flex justify-center py-2">
+          <div class="grid grid-cols-4 gap-1.5 w-56">
+            <input maxlength="1" value="B" class="w-12 h-12 text-center uppercase font-extrabold text-base rounded-lg border bg-stone-100 dark:bg-stone-800" style="border-color:var(--line)"/>
+            <input maxlength="1" class="w-12 h-12 text-center uppercase font-extrabold text-base rounded-lg border" style="border-color:var(--line)"/>
+            <input maxlength="1" class="w-12 h-12 text-center uppercase font-extrabold text-base rounded-lg border" style="border-color:var(--line)"/>
+            <input maxlength="1" class="w-12 h-12 text-center uppercase font-extrabold text-base rounded-lg border" style="border-color:var(--line)"/>
+            <input maxlength="1" class="w-12 h-12 text-center uppercase font-extrabold text-base rounded-lg border" style="border-color:var(--line)"/>
+            <input disabled class="w-12 h-12 text-center rounded-lg bg-stone-300 dark:bg-stone-700"/>
+            <input maxlength="1" class="w-12 h-12 text-center uppercase font-extrabold text-base rounded-lg border" style="border-color:var(--line)"/>
+            <input maxlength="1" class="w-12 h-12 text-center uppercase font-extrabold text-base rounded-lg border" style="border-color:var(--line)"/>
+          </div>
+        </div>
+        <button class="btn w-full" onclick="toast('¡Comprobado! Casillas completadas con éxito.')">Comprobar crucigrama</button>
+      </div>`;
+  } else if(S.quizScreen === 'microrrelatos'){
+    const microText = "Cuando despertó, el dinosaurio todavía estaba allí. Augusto suspiró, cerró el libro de tapas ajadas y comprendió que algunas lecturas jamás se extinguen en la memoria de quienes aman las palabras.";
+    el.innerHTML = `
+      <div class="p-4 space-y-4">
+        <div class="flex items-center justify-between border-b pb-2" style="border-color:var(--line)">
+          <div class="flex items-center gap-2">
+            <button class="icon-btn" onclick="openQuizGame('hub')">${ic('back','w-4 h-4')}</button>
+            <h2 class="serif text-lg font-bold">Microrrelatos Semanales</h2>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">Lectura & Audio</span>
+        </div>
+        <div class="card p-5 space-y-3">
+          <p class="quote text-base sm:text-lg leading-relaxed">"${microText}"</p>
+          <div class="flex items-center justify-between pt-2 border-t text-[11px]" style="border-color:var(--line); color:var(--muted)">
+            <span>Por Clara Vega</span>
+            <span>❤️ 184 lectores</span>
+          </div>
+        </div>
+        <button class="btn w-full flex items-center justify-center gap-2" onclick="playMicroAudio('${microText.replace(/'/g, "\\'")}')">
+          ${ic('volume','w-4 h-4')} <span>Escuchar relato narrado</span>
+        </button>
+      </div>`;
+  } else if(S.quizScreen === 'ahorcado'){
+    const h = S.hangman;
+    const letters = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
+    const revealedWord = h.word.split('').map(char => h.guessed.includes(char) ? char : '_').join(' ');
+    const won = !revealedWord.includes('_');
+    const lost = h.fails >= h.maxFails;
+
+    el.innerHTML = `
+      <div class="p-4 space-y-4">
+        <div class="flex items-center justify-between border-b pb-2" style="border-color:var(--line)">
+          <div class="flex items-center gap-2">
+            <button class="icon-btn" onclick="openQuizGame('hub')">${ic('back','w-4 h-4')}</button>
+            <h2 class="serif text-lg font-bold">El Ahorcado Literario</h2>
+          </div>
+          <span class="text-xs font-bold text-rose-800">Vidas: ${h.maxFails - h.fails} / ${h.maxFails}</span>
+        </div>
+        <div class="card p-4 text-center space-y-2">
+          <span class="text-[10px] font-bold uppercase tracking-wider block" style="color:var(--muted)">Pista:</span>
+          <p class="text-xs font-semibold text-amber-700">${h.hint}</p>
+          <div class="text-2xl font-mono font-extrabold tracking-widest py-2">${revealedWord}</div>
+          ${won ? `<div class="p-2 rounded bg-emerald-100 text-emerald-800 text-xs font-bold">¡Felicidades! +30 pts</div>`:''}
+          ${lost ? `<div class="p-2 rounded bg-rose-100 text-rose-800 text-xs font-bold">La palabra era ${h.word}</div>`:''}
+        </div>
+        <div class="flex flex-wrap justify-center gap-1.5 pt-1">
+          ${letters.map(letter => {
+            const isUsed = h.guessed.includes(letter);
+            return `
+              <button onclick="guessHangmanLetter('${letter}')" ${isUsed||won||lost?'disabled':''}
+                class="w-8 h-8 rounded-lg text-xs font-bold border ${isUsed?'opacity-30':'bg-white dark:bg-stone-800'}"
+                style="border-color:var(--line)">
+                ${letter}
+              </button>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+}
+
+// ===============================================
+// LÓGICA DE TARJETAS DESLIZABLES (SWIPE R+J)
+// ===============================================
+
+function initTinderGesture() {
+  const card = document.getElementById('active-swipe-card');
+  if (!card) return;
+
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+
+  const badgeLike = document.getElementById('badge-like');
+  const badgeNope = document.getElementById('badge-nope');
+
+  function onDragStart(e) {
+    isDragging = true;
+    startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+    card.style.transition = 'none'; // Quitar transición para que siga el dedo instantáneamente
+  }
+
+  function onDragMove(e) {
+    if (!isDragging) return;
+    const x = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+    currentX = x - startX;
+    
+    // Rotación suave basada en la distancia de arrastre
+    const rotate = currentX * 0.05;
+    card.style.transform = `translate(${currentX}px, 0) rotate(${rotate}deg)`;
+
+    // Mostrar los sellos de "ME INTERESA" o "PASAR" según la dirección
+    if (currentX > 0) {
+      badgeLike.style.opacity = Math.min(currentX / 100, 1);
+      badgeNope.style.opacity = 0;
+    } else {
+      badgeNope.style.opacity = Math.min(Math.abs(currentX) / 100, 1);
+      badgeLike.style.opacity = 0;
+    }
+  }
+
+  function onDragEnd() {
+    if (!isDragging) return;
+    isDragging = false;
+    card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+
+    // Umbral de 100px para considerar que la tarjeta ha sido deslizada
+    if (currentX > 100) {
+      triggerSwipeAction('like');
+    } else if (currentX < -100) {
+      triggerSwipeAction('nope');
+    } else {
+      // Si no supera el umbral, vuelve al centro como un resorte (Snap back)
+      card.style.transform = 'translate(0px, 0px) rotate(0deg)';
+      badgeLike.style.opacity = 0;
+      badgeNope.style.opacity = 0;
+    }
+  }
+
+  // Eventos para ratón (escritorio)
+  card.addEventListener('mousedown', onDragStart);
+  window.addEventListener('mousemove', onDragMove);
+  window.addEventListener('mouseup', onDragEnd);
+
+  // Eventos para táctil (móvil)
+  card.addEventListener('touchstart', onDragStart, {passive: true});
+  window.addEventListener('touchmove', onDragMove, {passive: true});
+  window.addEventListener('touchend', onDragEnd);
+}
+
+function triggerSwipeAction(action) {
+  const card = document.getElementById('active-swipe-card');
+  if (!card) return;
+
+  // Animar la tarjeta saliendo de la pantalla
+  const moveX = action === 'like' ? window.innerWidth : -window.innerWidth;
+  card.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+  card.style.transform = `translate(${moveX}px, 0) rotate(${moveX * 0.05}deg)`;
+  card.style.opacity = '0';
+
+  // Esperar a que termine la animación y avanzar al siguiente perfil
+  setTimeout(() => {
+    if (action === 'like') {
+      toast('¡Complicidad enviada! 💘');
+    } else {
+      toast('Has pasado de perfil');
+    }
+    
+    // Avanzar el índice y volver a renderizar
+    if (typeof S.rjCrushIndex !== 'undefined') {
+      S.rjCrushIndex++;
+    }
+    renderQuiz();
+  }, 400);
+}
+
+function openQuizGame(screen){
+  S.quizScreen = screen;
+  renderQuiz();
+}
+
+function startRJQuiz(){
+  S.rjStep = 'quiz';
+  S.rjCurQuestion = 0;
+  S.rjUserTraits = [];
+  renderQuiz();
+}
+
+function answerRJQuestion(optIdx){
+  const q = RJ_QUIZ_QUESTIONS[S.rjCurQuestion];
+  const choice = q.opts[optIdx];
+  S.rjUserTraits.push(choice.trait);
+
+  if(S.rjCurQuestion + 1 < RJ_QUIZ_QUESTIONS.length){
+    S.rjCurQuestion++;
+    renderQuiz();
+  } else {
+    toast(`¡Test completado! Arquetipo: ${S.rjUserTraits[0]}`);
+    S.rjStep = 'matches';
+    renderQuiz();
+  }
+}
+
+function resetRJDeck(){
+  S.rjCrushIndex = 0;
+  renderQuiz();
+}
+
+function initTinderGesture(){
+  const card = document.getElementById('active-swipe-card');
+  const badgeLike = document.getElementById('badge-like');
+  const badgeNope = document.getElementById('badge-nope');
+  if(!card) return;
+
+  let startX = 0, currentX = 0, isDragging = false;
+
+  const onStart = e => {
+    startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    isDragging = true;
+    card.style.transition = 'none';
+  };
+
+  const onMove = e => {
+    if(!isDragging) return;
+    currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    const deltaX = currentX - startX;
+    const rotate = deltaX * 0.08;
+    card.style.transform = `translate(${deltaX}px, ${deltaX * 0.1}px) rotate(${rotate}deg)`;
+
+    if(deltaX > 25){
+      badgeLike.style.opacity = Math.min(1, (deltaX - 25) / 80);
+      badgeNope.style.opacity = 0;
+    } else if(deltaX < -25){
+      badgeNope.style.opacity = Math.min(1, (-deltaX - 25) / 80);
+      badgeLike.style.opacity = 0;
+    } else {
+      badgeLike.style.opacity = 0;
+      badgeNope.style.opacity = 0;
+    }
+  };
+
+  const onEnd = () => {
+    if(!isDragging) return;
+    isDragging = false;
+    const deltaX = currentX - startX;
+    card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+
+    if(deltaX > 110){
+      triggerSwipeAction('like');
+    } else if(deltaX < -110){
+      triggerSwipeAction('nope');
+    } else {
+      card.style.transform = 'translate(0px, 0px) rotate(0deg)';
+      badgeLike.style.opacity = 0;
+      badgeNope.style.opacity = 0;
+    }
+  };
+
+  card.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+
+  card.addEventListener('touchstart', onStart, { passive: true });
+  card.addEventListener('touchmove', onMove, { passive: true });
+  card.addEventListener('touchend', onEnd);
+}
+
+function triggerSwipeAction(dir){
+  const card = document.getElementById('active-swipe-card');
+  const curUserId = S.rjMatchList[S.rjCrushIndex];
+  const user = USERS_DATA[curUserId];
+
+  if(card){
+    const xDist = dir === 'like' ? 450 : -450;
+    card.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+    card.style.transform = `translate(${xDist}px, 40px) rotate(${dir==='like'?25:-25}deg)`;
+    card.style.opacity = '0';
+  }
+
+  setTimeout(() => {
+    if(dir === 'like'){
+      S.lastMatchedUser = curUserId;
+      showMatchModal(user);
+    } else {
+      toast(`Has pasado el perfil de ${user.name}`);
+      nextRJCard();
+    }
+  }, 220);
+}
+
+function nextRJCard(){
+  S.rjCrushIndex++;
+  renderQuiz();
+}
+
+function showMatchModal(user){
+  document.getElementById('match-name').textContent = user.name;
+  document.getElementById('match-photo').src = user.photo;
+  document.getElementById('match-af').textContent = `${user.af}% de Complicidad Literaria`;
+  document.getElementById('match-desc').textContent = `Coincidís plenamente en vuestra lectura de ${user.faveBook}. ¡El algoritmo de Romeo y Julieta os considera almas afines!`;
+  document.getElementById('modal-match').classList.remove('hidden');
+}
+
+function closeMatchModal(){
+  document.getElementById('modal-match').classList.add('hidden');
+  nextRJCard();
+}
+
+function startMatchChat(){
+  const matchedId = S.lastMatchedUser;
+  closeMatchModal();
+  if(!THREADS[matchedId]){
+    const u = USERS_DATA[matchedId];
+    THREADS[matchedId] = { name: u.name, photo: u.photo, af: u.af, city: u.city, hook: u.faveBook, msgs: [] };
+  }
+  openChat(matchedId);
+}
+
+function renderMensajes(){
+  const el = document.getElementById('v-mensajes');
+  if(!S.activeChat){
+    el.innerHTML = `
+      <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--line)">
+        <div>
+          <h2 class="serif text-xl font-bold">Conversaciones literarias</h2>
+          <p class="text-xs" style="color:var(--muted)">Complicidad a través de citas, dilemas e ideas</p>
+        </div>
+        <button class="chip text-xs" onclick="go('inicio')">← Volver</button>
+      </div>
+
+      <div class="m-4 p-3.5 rounded-2xl bg-gradient-to-r from-rose-900 to-amber-700 text-white flex items-center justify-between shadow-md">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">💌</span>
+          <div>
+            <span class="text-[10px] font-black uppercase text-amber-200">Nueva complicidad</span>
+            <p class="text-xs font-bold leading-tight">Sofía Bécquer te ha enviado un mensaje</p>
+          </div>
+        </div>
+        <button class="btn bg-white text-stone-900 text-xs px-3 py-1 shadow" onclick="openChat('sofia')">Abrir</button>
+      </div>
+
+      <div class="px-4 pb-4 space-y-2">
+        ${Object.entries(THREADS).filter(([id]) => id !== 'kurko').map(([id, t]) => {
+          const last = t.msgs[t.msgs.length - 1];
+          return `
+          <button onclick="openChat('${id}')" class="w-full card p-3 flex items-center gap-3 text-left hover:border-rose-900 transition">
+            <img src="${t.photo}" class="w-11 h-11 rounded-full object-cover shrink-0 border" style="border-color:var(--line)" />
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold truncate">${esc(t.name)}</span>
+                <span class="text-[10px] font-bold" style="color:var(--maroon)">${t.af}% afín</span>
+              </div>
+              <p class="text-[11px] truncate mt-0.5" style="color:var(--muted)">${last ? esc(last.t) : '¡Empieza una conversación literaria!'}</p>
+            </div>
+          </button>`;
+        }).join('')}
+      </div>`;
+    return;
+  }
+
+  const t = THREADS[S.activeChat];
+  el.innerHTML = `
+    <div class="sticky top-0 z-10 flex items-center justify-between px-3 py-2.5 border-b" style="background:var(--surface); border-color:var(--line)">
+      <div class="flex items-center gap-2">
+        <button class="icon-btn" onclick="S.activeChat=null;renderMensajes()">${ic('back','w-4 h-4')}</button>
+        <img src="${t.photo}" class="w-8 h-8 rounded-full object-cover border" style="border-color:var(--maroon)" />
+        <div>
+          <h3 class="text-xs font-bold">${esc(t.name)}</h3>
+          <p class="text-[10px]" style="color:var(--maroon)">${t.af}% complicidad lectora</p>
+        </div>
+      </div>
+      <button class="btn-ghost text-[11px]" onclick="toast('Conversación guardada en tu cuaderno')">Opciones</button>
+    </div>
+
+    <div class="p-2 text-center">
+      <span class="chip text-[10px]" style="background:var(--maroon-soft);color:var(--maroon);border-color:transparent">
+        ${ic('spark','w-3 h-3')} Conectados por: ${esc(t.hook)}
+      </span>
+    </div>
+
+    <div id="thread-box" class="p-4 space-y-2.5 overflow-y-auto max-h-[520px]">
+      ${t.msgs.length ? t.msgs.map(m => `
+        <div class="flex ${m.me?'justify-end':'justify-start'}">
+          <div class="max-w-[80%] px-3.5 py-2 text-xs ${m.me?'bubble-me':'bubble-them'}">
+            ${esc(m.t)}
+            <div class="text-[9px] mt-1 text-right opacity-70">${m.time}</div>
+          </div>
+        </div>
+      `).join('') : `
+        <div class="text-center py-8 text-xs" style="color:var(--muted)">
+          <span class="text-2xl block mb-2">💌</span>
+          Rómpase el hielo citando un pasaje inolvidable.
+        </div>
+      `}
+    </div>
+
+    <div class="sticky bottom-0 p-3 border-t flex gap-2" style="background:var(--surface); border-color:var(--line)">
+      <input id="chat-input" placeholder="Escribe un mensaje o comenta un pasaje..." onkeydown="if(event.key==='Enter')sendChatMsg()"
+        class="flex-1 rounded-full px-4 py-2 text-xs outline-none" style="background:var(--card);border:1px solid var(--line);color:var(--ink)">
+      <button class="btn px-3 py-2" onclick="sendChatMsg()">${ic('send','w-4 h-4')}</button>
+    </div>`;
+
+  setTimeout(() => {
+    const box = document.getElementById('thread-box');
+    if(box) box.scrollTop = box.scrollHeight;
+  }, 50);
+}
+
+function openChat(id){
+  S.activeChat = id;
+  go('mensajes');
+}
+
+function sendChatMsg(){
+  const inp = document.getElementById('chat-input');
+  const txt = inp.value.trim();
+  if(!txt) return;
+  const t = THREADS[S.activeChat];
+  t.msgs.push({ me:true, t:txt, time:now() });
+  inp.value = '';
+  renderMensajes();
+
+  const interlocutor = S.activeChat;
+  setTimeout(() => {
+    let reply = "¡Totalmente de acuerdo! Qué gran punto de vista sobre esa obra.";
+    if(interlocutor === 'laura') {
+      reply = "¡Me encanta lo que dices! Podríamos quedar este viernes en La Central y charlarlo con un café, ¿te parece? ☕";
+    } else if(interlocutor === 'sofia') {
+      reply = "¡Qué ilusión leerte! En la caseta 12 de Moyano tienen maravillas de segunda mano. ¿Sueles pasear por allí?";
+    } else if(interlocutor === 'clara') {
+      reply = "Ese dilema me obsesiona desde hace meses. Apuntémonos a la cata con debate literario del jueves.";
+    }
+    t.msgs.push({ me:false, t:reply, time:now() });
+    toast(`Nuevo mensaje de ${t.name} 💌`);
+    if(S.tab === 'mensajes' && S.activeChat === interlocutor){
+      renderMensajes();
+    }
+  }, 1600);
+}
+
+const SAMPLE_PHOTOS = [
+  'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=700&q=80',
+  'https://images.unsplash.com/photo-1507842229450-7990e3488c73?auto=format&fit=crop&w=700&q=80',
+  'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=700&q=80'
+];
+
+function openUniversalComposer(){
+  const sel = document.getElementById('composer-book');
+  sel.innerHTML = BOOKS.map(b => `<option value="${b.id}">📖 ${b.t}</option>`).join('');
+  document.getElementById('composer-text').value = '';
+  removeAttachedMedia();
+  document.getElementById('modal-composer').classList.remove('hidden');
+}
+
+function closeComposer(){
+  document.getElementById('modal-composer').classList.add('hidden');
+}
+
+function attachPhoto(){
+  S.composerMedia = 'photo';
+  S.composerPhotoSrc = SAMPLE_PHOTOS[Math.floor(Math.random() * SAMPLE_PHOTOS.length)];
+  document.getElementById('composer-mode-badge').textContent = 'Momento Fotográfico';
+  document.getElementById('composer-media-preview').classList.remove('hidden');
+  document.getElementById('composer-preview-img').src = S.composerPhotoSrc;
+  document.getElementById('composer-preview-img').classList.remove('hidden');
+  document.getElementById('composer-preview-video').classList.add('hidden');
+  document.getElementById('composer-reel-question-box').classList.add('hidden');
+  toast('Foto de lectura adjuntada 📸');
+}
+
+function attachVideo(){
+  S.composerMedia = 'video';
+  document.getElementById('composer-mode-badge').textContent = 'Reel Vertical (BookTok)';
+  document.getElementById('composer-media-preview').classList.remove('hidden');
+  document.getElementById('composer-preview-img').classList.add('hidden');
+  document.getElementById('composer-preview-video').classList.remove('hidden');
+  document.getElementById('composer-reel-question-box').classList.remove('hidden');
+  toast('Modo Reel activado. Añade una pregunta detonante 🎬');
+}
+
+function removeAttachedMedia(){
+  S.composerMedia = null;
+  S.composerPhotoSrc = null;
+  document.getElementById('composer-mode-badge').textContent = 'Nota de lectura';
+  document.getElementById('composer-media-preview').classList.add('hidden');
+  document.getElementById('composer-preview-img').classList.add('hidden');
+  document.getElementById('composer-preview-video').classList.add('hidden');
+  document.getElementById('composer-reel-question-box').classList.add('hidden');
+}
+
+async function publishUniversalContent(){
+    const txt = document.getElementById('composer-text').value.trim();
+    if(!txt){ toast('Escribe algo sobre tu lectura'); return; }
+    const bookId = Number(document.getElementById('composer-book').value);
+    const postId = 'post-' + Date.now();
+
+    if(S.composerMedia === 'video'){
+        const q = document.getElementById('composer-reel-q').value.trim() || '¿Qué opinas tú de este libro?';
+        const newReel = {
+            id: 'r-' + Date.now(),
+            user: 'kurko',
+            book: bookId,
+            quote: txt,
+            audio: 'Voz original · Kur-ko',
+            triggerQuestion: q,
+            videoBg: SAMPLE_PHOTOS[1],
+            likes: 1,
+            comments: 0
+        };
+        REELS.unshift(newReel);
+        closeComposer();
+        toast('¡Reel publicado en "Para ti"!');
+        S.feedMode = 'reels';
+        go('inicio');
+    } else if(S.composerMedia === 'photo'){
+        const newPost = {
+            id: 'kurko',
+            author: S.user.name,
+            book: bookId,
+            caption: txt,
+            noteReflection: 'Compartido desde mi rincón de lectura',
+            place: 'Madrid · Lectura activa',
+            img: S.composerPhotoSrc,
+            likes: 1,
+            time: 'Justo ahora'
+        };
+        FEED_ITEMS.unshift(newPost);
+        closeComposer();
+        toast('¡Momento fotográfico publicado en Notas!');
+        S.feedMode = 'notas';
+        go('inicio');
+    } else {
+        const bookObj = (typeof BOOKS !== 'undefined' && Array.isArray(BOOKS))
+            ? BOOKS.find(b => b.id === bookId)
+            : null;
+        const bookTitle = bookObj ? bookObj.t : 'Lectura personal';
+
+        try {
+            const { data, error } = await sbClient
+                .from('notes')
+                .insert([{
+                    id: crypto.randomUUID(),
+                    user_name: (typeof S !== 'undefined' && S.user && S.user.name) ? S.user.name : 'Kur-ko',
+                    user_avatar: (typeof USERS_DATA !== 'undefined' && USERS_DATA.kurko) ? USERS_DATA.kurko.photo : null,
+                    match_percent: 100,
+                    book_title: bookTitle,
+                    book_quote: txt,
+                    user_comment: 'Reflexión compartida en comunidad',
+                    location_name: 'Madrid · Lectura activa',
+                    rating: 9.5,
+                    likes_count: 0
+                }])
+                .select();
+
+            if (error) {
+                console.error('Error insertando en Supabase:', error.message);
+                toast('Error al publicar nota');
+                return;
+            }
+
+            console.log('Nota guardada con éxito en Supabase:', data);
+            
+            closeComposer();
+            toast('¡Nota literaria publicada con éxito!');
+            
+            await fetchFeedFromDB();
+            go('inicio');
+
+        } catch (err) {
+            console.error('Fallo en la publicación:', err);
+            toast('Error de conexión');
+        }
+    }
+}
+let curWhisper = null;
+function openWhisper(userId, bookId, page){
+  const b = bookOf(bookId);
+  const u = THREADS[userId] || USERS_DATA[userId] || { name: 'Lector' };
+  curWhisper = { userId, bookId, page };
+  document.getElementById('wh-title').textContent = `Susurrar a ${u.name.split(' ')[0]}`;
+  document.getElementById('wh-sub').textContent = `Sobre ${b.t}${page?' · pág. '+page:''}`;
+
+  const ideas = [
+    `Me fascinó tu reflexión sobre ${b.t}. ¿Qué opinas?`,
+    `¿Te apetece un café para debatir este pasaje?`,
+    `Coincidimos plenamente en nuestra complicidad lectora.`
+  ];
+  document.getElementById('wh-chips').innerHTML = ideas.map(idea => `
+    <button class="chip text-[10px]" onclick="document.getElementById('wh-text').value='${idea}'">${idea}</button>
+  `).join('');
+
+  document.getElementById('wh-text').value = '';
+  document.getElementById('modal-whisper').classList.remove('hidden');
+}
+
+function closeWhisper(){
+  document.getElementById('modal-whisper').classList.add('hidden');
+}
+
+function sendWhisper(){
+  const txt = document.getElementById('wh-text').value.trim();
+  if(!txt){ toast('Escribe un mensaje para conectar'); return; }
+  const { userId, bookId, page } = curWhisper;
+  const b = bookOf(bookId);
+  if(!THREADS[userId]) {
+    const u = USERS_DATA[userId] || { name:'Lector', photo:USERS_DATA.laura.photo, af:90 };
+    THREADS[userId] = { name: u.name, photo: u.photo, af: u.af, hook: b.t, msgs: [] };
+  }
+  THREADS[userId].msgs.push({
+    me: true,
+    t: `📖 Cita de ${b.t}${page?' (pág. '+page+')':''}: "${txt}"`,
+    time: now()
+  });
+  closeWhisper();
+  toast('¡Susurro enviado con éxito! Abriendo chat...');
+  openChat(userId);
+}
+
+let activeRackWord = '';
+function addRackLetter(l){
+  activeRackWord += l;
+  const b = document.getElementById('ap-board');
+  if(b) b.textContent = activeRackWord;
+}
+function resetRack(){
+  activeRackWord = '';
+  const b = document.getElementById('ap-board');
+  if(b) b.innerHTML = '<span class="text-stone-400 font-normal text-xs">Toca letras de tu atril...</span>';
+}
+function submitRackWord(){
+  if(!activeRackWord) return;
+  S.quizScore += activeRackWord.length * 10;
+  toast(`¡Palabra "${activeRackWord}" aceptada! +${activeRackWord.length * 10} pts`);
+  resetRack();
+}
+function guessHangmanLetter(letter){
+  const h = S.hangman;
+  if(h.guessed.includes(letter)) return;
+  h.guessed.push(letter);
+  if(!h.word.includes(letter)) h.fails++;
+  else S.quizScore += 5;
+  renderQuiz();
+}
+function playMicroAudio(text){
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'es-ES';
+    u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+    toast('Narrando microrrelato con audio...');
+  } else {
+    toast('Tu navegador no soporta síntesis de voz');
+  }
+}
+
+function renderPerfil(){
+  const b = bookOf(S.user.reading);
+  const p = pctRead();
+  const C = 2 * Math.PI * 15;
+
+  document.getElementById('v-perfil').innerHTML = `
+    <div class="p-5 space-y-4">
+      <div class="flex items-center gap-4">
+        <div class="relative w-16 h-16 shrink-0">
+          <svg viewBox="0 0 36 36" class="w-16 h-16 -rotate-90">
+            <circle cx="18" cy="18" r="15" stroke="var(--line)" stroke-width="2.5" fill="none"/>
+            <circle cx="18" cy="18" r="15" stroke="var(--maroon)" stroke-width="2.5" fill="none" stroke-linecap="round"
+              stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p/100)}"/>
+          </svg>
+          <div class="absolute inset-1.5 rounded-full overflow-hidden shadow-md border-2 border-amber-600">
+            <img src="${S.user.photo}" alt="Kur-ko" class="w-full h-full object-cover" />
+          </div>
+        </div>
+        <div>
+          <h2 class="serif text-xl font-bold">${S.user.name}</h2>
+          <p class="text-xs" style="color:var(--muted)">${S.user.city} · Lector empedernido</p>
+          <div class="flex gap-1 mt-1.5 flex-wrap">
+            <span class="chip text-[9px]">${S.rjUserTraits[0]}</span>
+            <span class="chip text-[9px]">Café & Novelas</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="card p-2.5">
+          <div class="text-base font-bold" style="color:var(--maroon)">${S.user.streak} días</div>
+          <div class="text-[10px]" style="color:var(--muted)">Racha activa</div>
+        </div>
+        <div class="card p-2.5">
+          <div class="text-base font-bold" style="color:var(--gold)">9.2</div>
+          <div class="text-[10px]" style="color:var(--muted)">Nota media</div>
+        </div>
+        <div class="card p-2.5">
+          <div class="text-base font-bold" style="color:var(--maroon)">96%</div>
+          <div class="text-[10px]" style="color:var(--muted)">Match Top</div>
+        </div>
+      </div>
+
+      <div class="card p-4 space-y-2.5">
+        <div class="flex justify-between items-center text-xs">
+          <span class="font-bold uppercase tracking-wider" style="color:var(--maroon)">Leyendo ahora</span>
+          <span class="text-[10px]" style="color:var(--muted)">Pág. ${S.user.page} de 384</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-14 rounded serif text-[8px] p-1 text-white flex flex-col justify-end shrink-0" style="background:linear-gradient(145deg,${b.c1},${b.c2})">${b.t}</div>
+          <div class="flex-1 space-y-1">
+            <div class="flex justify-between text-xs font-semibold"><span>${b.t}</span><span style="color:var(--maroon)">${p}%</span></div>
+            <div class="w-full h-2 rounded-full overflow-hidden" style="background:var(--line)">
+              <div class="h-full rounded-full" style="width:${p}%; background:var(--maroon); transition:0.3s"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn w-full mt-2" onclick="logReadingSession()" ${S.user.readToday?'disabled':''}>
+          ${S.user.readToday ? 'Lectura de hoy registrada ✓' : '+ Registrar 15 min de lectura'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function logReadingSession(){
+  if(S.user.readToday) return;
+  S.user.readToday = true;
+  S.user.streak++;
+  S.user.page = Math.min(384, S.user.page + 12);
+  toast('¡Racha aumentada a ' + S.user.streak + ' días! 🔥');
+  renderPerfil();
+  updateHeader();
+}
+
+toggleTheme();
+go('inicio');
+
+setTimeout(() => {
+  const badge = document.getElementById('chat-badge');
+  if(badge) {
+    badge.textContent = '3';
+    badge.classList.add('animate-bounce');
+  }
+  toast('✨ ¡Sofía Bécquer ha conectado contigo por "Cien años de soledad"! 📖');
+}, 3200);
+// ===============================================
+// SISTEMA DE AUTENTICACIÓN (SUPABASE AUTH)
+// ===============================================
+
+async function registerUser() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-pass').value.trim();
+  
+  if (!email || !password) return toast('Por favor, rellena email y contraseña.');
+  if (password.length < 6) return toast('La contraseña debe tener al menos 6 caracteres.');
+
+  toast('Creando cuenta...');
+  const { data, error } = await sbClient.auth.signUp({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    console.error('Error en registro:', error);
+    toast('Error: ' + error.message);
+  } else {
+    toast('¡Cuenta creada! Iniciando sesión...');
+    checkSession();
+  }
+}
+
+async function loginUser() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-pass').value.trim();
+  
+  if (!email || !password) return toast('Por favor, introduce tus credenciales.');
+
+  toast('Iniciando sesión...');
+  const { data, error } = await sbClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    console.error('Error en login:', error);
+    toast('Credenciales incorrectas o usuario no existe.');
+  } else {
+    toast('¡Bienvenido de nuevo!');
+    checkSession(); 
+  }
+}
+
+async function logoutUser() {
+  await sbClient.auth.signOut();
+  S.user = null;
+  document.getElementById('modal-auth').classList.remove('hidden');
+  toast('Has cerrado sesión correctamente.');
+}
+
+async function checkSession() {
+  const { data: { session } } = await sbClient.auth.getSession();
+  const authModal = document.getElementById('modal-auth');
+  
+  if (session) {
+    // Si hay sesión activa, ocultamos la pantalla de login y guardamos el usuario
+    if (authModal) authModal.classList.add('hidden');
+    
+    // Extraemos el nombre antes de la arroba para usarlo como 'user_name'
+    const nameFromEmail = session.user.email.split('@')[0];
+    
+    S.user = { 
+      id: session.user.id, 
+      email: session.user.email,
+      name: nameFromEmail 
+    };
+    
+    console.log('Usuario autenticado:', S.user.name);
+    // Recargamos las valoraciones del usuario autenticado
+    fetchUserRatingsFromDB(); 
+  } else {
+    // Si no hay sesión, mostramos la pantalla de login de forma forzosa
+    if (authModal) authModal.classList.remove('hidden');
+  }
+}
+</script>
+</body>
+</html>
