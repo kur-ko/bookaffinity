@@ -8,6 +8,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 <style>
+/* Realce de color y contraste editorial para Leaflet */
+.leaflet-tile-pane {
+  filter: saturate(1.25) contrast(1.08) brightness(1.02);
+}
 :root {
   --bg: #F5EFEB;
   --surface: #FCFAF8;
@@ -43,6 +47,179 @@
   --gold-soft: #2B2313;
   --parchment: #181E2B;
   --ticket-bg: #1B212E;
+}
+/* 🌕 ILUMINACIÓN COMPLETA DE DESCRIPCIONES Y TEXTOS EN MODO NOCHE */
+
+/* 1. Descripción del evento (la caja del recuadro rojo) */
+.dark p,
+.dark .leading-relaxed {
+  color: #E2E8F0 !important; /* Blanco hueso / Slate claro de alta visibilidad */
+}
+
+/* Subtítulo de la sede (Café La Buena Vida) */
+.dark [class*="text-amber-"],
+.dark [style*="color:var(--gold)"] {
+  color: #FBBF24 !important; /* Ámbar brillante legible sobre oscuro */
+}
+
+/* 2. Tarjeta Moleskine inferior (Anotación al margen y texto de cita) */
+.dark [class*="border-rose-"],
+.dark [class*="border-amber-"],
+.dark [class*="border-stone-"] {
+  border-color: #334155 !important;
+}
+
+.dark .text-stone-600,
+.dark .text-stone-500,
+.dark .text-stone-400 {
+  color: #94A3B8 !important; /* Gris luminoso para etiquetas secundarias */
+}
+
+/* 3. Etiqueta PÁG. 42 en modo noche */
+.dark [class*="bg-stone-200"],
+.dark [class*="bg-stone-100"] {
+  background-color: #1E293B !important;
+  color: #F8FAFC !important;
+  border: 1px solid #475569;
+}
+/* ==============================================================================
+   🌓 CORRECCIÓN DE CONTRASTE TOTAL (MODO NOCHE VS MODO DÍA)
+   ============================================================================== */
+
+/* 1. Tarjeta dorada de Evento / Quedada en modo noche */
+.dark #featured-event-card,
+.dark .card,
+.dark [data-event-card] {
+  color: #F7FAFC !important;
+}
+
+/* Forzar títulos y subtítulos del evento a blanco y ámbar visible */
+.dark #featured-event-card h3,
+.dark .card h3,
+.dark .serif.text-lg,
+.dark .serif.font-bold {
+  color: #FFFFFF !important;
+}
+
+.dark #featured-event-card p,
+.dark .card p,
+.dark .note-moleskine-card p {
+  color: #CBD5E1 !important; /* Gris claro de alta legibilidad */
+}
+
+/* 2. Tarjetas Moleskine (Citas y Subrayados del Feed) en modo noche */
+.dark .note-moleskine-card {
+  background: #151922 !important;
+  border-color: #2D374D !important;
+}
+
+.dark .note-moleskine-card blockquote,
+.dark .note-moleskine-card q,
+.dark .note-moleskine-card .font-serif {
+  color: #F8FAFC !important; /* Texto de la cita en blanco roto */
+}
+
+.dark .note-moleskine-card span,
+.dark .note-moleskine-card div {
+  color: #CBD5E1 !important;
+}
+
+/* 3. Modo día: Asegurar textos oscuros cuando se desactive la noche */
+:root:not(.dark) #featured-event-card h3,
+:root:not(.dark) .card h3,
+:root:not(.dark) .note-moleskine-card blockquote {
+  color: #1B1816 !important;
+}
+
+:root:not(.dark) #featured-event-card p,
+:root:not(.dark) .card p,
+:root:not(.dark) .note-moleskine-card p {
+  color: #4B5563 !important;
+}
+/* 🌓 SINCRONIZACIÓN AUTOMÁTICA DE CONTRASTE DÍA / NOCHE */
+.card {
+  background-color: var(--card) !important;
+  color: var(--ink) !important;
+  border-color: var(--line) !important;
+}
+
+/* En modo noche: títulos blancos y textos secundarios legibles */
+.dark .card h1, 
+.dark .card h2, 
+.dark .card h3, 
+.dark .card h4, 
+.dark .card b, 
+.dark .card strong {
+  color: #F7FAFC !important;
+}
+
+.dark .card p, 
+.dark .card span:not([class*="bg-"]):not([class*="text-rose-"]):not([class*="text-amber-"]) {
+  color: var(--muted);
+}
+
+/* En modo día: títulos en tinta oscura suave */
+:root:not(.dark) .card h1,
+:root:not(.dark) .card h2,
+:root:not(.dark) .card h3,
+:root:not(.dark) .card h4,
+:root:not(.dark) .card b,
+:root:not(.dark) .card strong {
+  color: #1B1816 !important;
+}
+/* ==============================================================================
+   🎮 CORRECCIÓN DE CONTRASTE: SALA DE JUEGOS & R+J
+   ============================================================================== */
+
+/* 1. Tarjeta Romeo y Julieta (siempre texto blanco luminoso en modo día Y noche) */
+.card[onclick*="openQuizGame('rj')"],
+[onclick*="openQuizGame('rj')"] h3,
+[onclick*="openQuizGame('rj')"] p,
+[onclick*="openQuizGame('rj')"] span {
+  color: #FFFFFF !important;
+}
+
+[onclick*="openQuizGame('rj')"] p {
+  color: #E2E8F0 !important; /* Gris claro de alta legibilidad */
+}
+
+/* Evitar que las reglas generales de modo día sobreescriban esta tarjeta */
+:root:not(.dark) .card[onclick*="openQuizGame('rj')"] h3 {
+  color: #FFFFFF !important;
+}
+
+:root:not(.dark) .card[onclick*="openQuizGame('rj')"] p {
+  color: #E2E8F0 !important;
+}
+
+/* 2. Teclado de 'El Ahorcado' (fondo pizarra y letras blancas nítidas) */
+#v-quiz button[onclick*="guessHangmanLetter"] {
+  background-color: #1E293B !important;
+  color: #FFFFFF !important;
+  border: 1px solid #475569 !important;
+}
+
+#v-quiz button[onclick*="guessHangmanLetter"]:disabled {
+  background-color: #0F172A !important;
+  color: #64748B !important;
+  opacity: 0.45 !important;
+}
+
+/* 3. Casillas de 'Mini Crucigrama' (fondo oscuro y letra visible al teclear) */
+#v-quiz input[maxlength="1"] {
+  background-color: #1E293B !important;
+  color: #F8FAFC !important;
+  border: 1px solid #475569 !important;
+}
+
+#v-quiz input[maxlength="1"]:focus {
+  border-color: #F59E0B !important;
+  outline: none !important;
+}
+
+#v-quiz input[disabled] {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
@@ -259,6 +436,9 @@ body {
 }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
 </style>
+<!-- Motor de Mapas Real Leaflet (Coste 0) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center sm:p-4">
 
@@ -411,21 +591,27 @@ body {
         class="w-full rounded-2xl p-3.5 text-sm outline-none resize-none leading-relaxed"
         style="background:var(--card); border:1px solid var(--line); color:var(--ink)"></textarea>
 
-      <div class="flex items-center justify-between pt-1">
-        <div class="flex items-center gap-2">
-          <select id="composer-book" class="rounded-full px-3 py-1.5 text-xs font-bold border outline-none cursor-pointer flex items-center"
-                  style="background:var(--card); border-color:var(--line); color:var(--maroon)">
-          </select>
-          <button type="button" onclick="attachPhoto()" class="icon-btn text-xs" title="Adjuntar foto de libro / momento">📸</button>
-          <button type="button" onclick="attachVideo()" class="icon-btn text-xs" title="Crear Reel vertical estilo BookTok">🎬</button>
-        </div>
-
-        <button class="btn px-5 py-2 font-bold shadow-md" onclick="publishUniversalContent()">
-          Publicar 🚀
-        </button>
+<div class="flex items-center justify-between pt-2 mt-1 border-t border-stone-200 dark:border-stone-800 pr-1">
+      <div class="flex items-center gap-1.5 min-w-0">
+        <select id="composer-book" class="max-w-[150px] truncate rounded-full px-2.5 py-1 text-xs font-bold border outline-none cursor-pointer"
+          style="background:var(--card); border-color:var(--line); color:var(--maroon)">
+        </select>
+        <button type="button" onclick="attachPhoto()" class="icon-btn text-xs shrink-0" title="Adjuntar foto de libro / momento">📷</button>
+        <button type="button" onclick="attachVideo()" class="icon-btn text-xs shrink-0" title="Crear Reel vertical estilo BookTok">🎬</button>
       </div>
+
+      <button onclick="publishUniversalContent()"
+        class="shrink-0 px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-md transition whitespace-nowrap">
+        <span>Publicar</span>
+        <span>🚀</span>
+      </button>
     </div>
-  </div>
+
+<button onclick="publishUniversalContent()" 
+  class="ml-auto px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition shrink-0 whitespace-nowrap">
+  <span>Publicar</span>
+  <span>🚀</span>
+</button>
 
   <!-- MODAL MATCH: COMPLICIDAD DE LECTURA -->
   <div id="modal-match" class="absolute inset-0 hidden z-50 flex items-center justify-center p-5" style="background:rgba(10,12,18,0.85); backdrop-filter:blur(8px);">
@@ -1571,159 +1757,445 @@ async function rateBook(bookId, score){
     console.error('Fallo de conexión al calificar libro:', err);
   }
 }
+// ==============================================================================
+// 🧭 GEOLOCALIZACIÓN REAL DEL DISPOSITIVO (GPS + Supabase)
+// ==============================================================================
+async function centerOnUserRealGPS() {
+  if (!navigator.geolocation) {
+    if (typeof toast === 'function') toast("Tu navegador no soporta geolocalización.");
+    else alert("Tu navegador no soporta geolocalización.");
+    return;
+  }
 
-function renderMapa(){
-  const allPins = [
-    { 
-      id:'kurko', type:'user', x:48, y:50, label:'Tú (Kur-ko)', 
-      status:'Leyendo Tokio Blues · 42 pág/h', speed:'En banco de plaza',
-      photo:USERS_DATA.kurko.photo, isMe:true 
+  if (typeof toast === 'function') toast("Obteniendo posición GPS...");
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+      console.log("📍 Coordenadas GPS obtenidas:", userLat, userLng);
+
+      // 1. Guardar en Supabase readers_locations
+      try {
+        if (typeof sbClient !== 'undefined') {
+          const activeUser = (typeof S !== 'undefined' && S.user && S.user.name) 
+            ? S.user.name.toLowerCase() 
+            : 'kurko';
+
+          const { error: upsertErr } = await sbClient
+            .from('readers_locations')
+            .upsert({
+              user_id: activeUser,
+              current_book: 'Leyendo en la Brújula',
+              reading_status: 'En línea',
+              speed_reading: 'GPS Activo',
+              location: `POINT(${userLng} ${userLat})`,
+              is_active: true
+            }, { onConflict: 'user_id' });
+
+          if (upsertErr) console.warn("Aviso al guardar en Supabase:", upsertErr.message);
+          else console.log("Posición sincronizada en Supabase con éxito.");
+        }
+      } catch (e) {
+        console.warn("Fallo al contactar con la tabla readers_locations:", e);
+      }
+
+      if (typeof toast === 'function') toast("¡Ubicación actualizada con éxito!");
+      
+      // 2. Mover o recentrar mapa
+      if (typeof recenterWazeMap === 'function') {
+        recenterWazeMap(userLat, userLng);
+      } else if (typeof renderMapa === 'function') {
+        renderMapa();
+      }
     },
-    { 
-      id:'laura', type:'user', x:32, y:28, label:'Laura · 96%', 
-      status:'Leyendo en Café La Central', speed:'450 m · 6 min a pie',
-      photo:USERS_DATA.laura.photo, book:'Tokio Blues'
+    (err) => {
+      console.error("Error devuelto por el GPS:", err.code, err.message);
+      let detalle = "No se pudo obtener la posición.";
+      if (err.code === 1) detalle = "Permiso denegado por el navegador. Habilita la ubicación.";
+      if (err.code === 2) detalle = "Posición no disponible en tu equipo.";
+      if (err.code === 3) detalle = "Tiempo de espera agotado al conectar con el GPS.";
+      
+      if (typeof toast === 'function') toast(detalle);
+      else alert(detalle);
     },
-    { 
-      id:'sofia', type:'user', x:76, y:36, label:'Sofía · 94%', 
-      status:'Explorando Caseta 12 de Moyano', speed:'1.1 km · 14 min',
-      photo:USERS_DATA.sofia.photo, book:'Cien años de soledad'
+    {
+      enableHighAccuracy: false, // Permite red/Wi-Fi si no hay chip GPS físico
+      timeout: 10000,
+      maximumAge: 60000
+    }
+  );
+}
+
+let leafletMapInstance = null;
+let userMarkerInstance = null;
+
+function renderMapa() {
+  const el = document.getElementById('v-mapa');
+  if (!el) return;
+
+  el.innerHTML = `
+    <div class="flex flex-col h-full w-full relative" style="min-height: calc(100vh - 65px);">
+      <!-- Cabecera Superior Flotante -->
+      <div class="p-3 z-[1000] flex items-center justify-between shadow-md" style="background:var(--surface); border-bottom:1px solid var(--line);">
+        <div>
+          <span class="text-xs font-bold block leading-tight">Brújula Literaria</span>
+          <span class="text-[10px]" style="color:var(--muted)">Lectores cercanos y eventos en vivo</span>
+        </div>
+        <button onclick="centerOnUserRealGPS()" class="chip text-[11px] py-1.5 px-3 font-semibold flex items-center gap-1 shadow-sm">
+          🧭 Mi posición GPS
+        </button>
+      </div>
+
+      <!-- Filtros Temáticos -->
+      <div class="px-3 py-2 z-[1000] flex gap-1.5 overflow-x-auto hide-sb shadow-sm" style="background:var(--card); border-bottom:1px solid var(--line);">
+        <button onclick="filterMapMarkers('all')" class="chip text-[10px] py-1 on">Todos</button>
+        <button onclick="filterMapMarkers('readers')" class="chip text-[10px] py-1">👥 Lectoras</button>
+        <button onclick="filterMapMarkers('events')" class="chip text-[10px] py-1">🎟️ Quedadas</button>
+        <button onclick="filterMapMarkers('spots')" class="chip text-[10px] py-1">📍 Librerías</button>
+      </div>
+
+      <!-- Contenedor del Mapa Real -->
+      <div id="real-leaflet-map" class="flex-1 w-full h-full relative" style="min-height: 480px; z-index: 1;"></div>
+    </div>
+  `;
+
+  // Inicializar Leaflet tras inyectar el HTML
+  setTimeout(() => {
+    initLeafletMapEngine();
+  }, 100);
+}
+// ==============================================================================
+// 🧭 MOTOR DEL MAPA LEAFLET MEJORADO (DISEÑO EDITORIAL + AVATARES REALES)
+// ==============================================================================
+
+function initLeafletMapEngine() {
+  const mapContainer = document.getElementById('real-leaflet-map');
+  if (!mapContainer) return;
+
+  if (leafletMapInstance) {
+    leafletMapInstance.remove();
+    leafletMapInstance = null;
+  }
+
+// Coordenadas iniciales (Centro de Aranjuez)
+const defaultLat = 40.0305;
+const defaultLng = -3.6042;
+
+  leafletMapInstance = L.map('real-leaflet-map', {
+    zoomControl: false
+  }).setView([defaultLat, defaultLng], 14);
+
+// Capa cartográfica editorial limpia y gratuita (sin API keys ni marcas de agua)
+L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors, Tiles style by Humanitarian OSM Team',
+  maxZoom: 19
+}).addTo(leafletMapInstance);
+
+  L.control.zoom({ position: 'bottomright' }).addTo(leafletMapInstance);
+
+  mapMarkersGroup = L.layerGroup().addTo(leafletMapInstance);
+
+  // 1. Cargar pines y avatares del piloto
+  cargarPinesLiterariosEnMapa();
+
+  // 2. Colocar de inmediato tu pin activo (Kur-ko) en el centro
+  renderUserMarker(defaultLat, defaultLng);
+
+  // 3. Si el dispositivo tiene GPS disponible, reubicar a tu posición real
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const uLat = pos.coords.latitude;
+        const uLng = pos.coords.longitude;
+        leafletMapInstance.setView([uLat, uLng], 15);
+        renderUserMarker(uLat, uLng);
+      },
+      (err) => {
+        console.log("GPS no disponible de inmediato, usando posición inicial fija.");
+      },
+      { enableHighAccuracy: false, timeout: 6000 }
+    );
+  }
+}
+
+function cargarPinesLiterariosEnMapa(filter = 'all') {
+  if (!mapMarkersGroup) return;
+  mapMarkersGroup.clearLayers();
+
+  // Pines y lectores ubicados directamente en Aranjuez
+  const puntosAranjuez = [
+    {
+      id: 'laura',
+      type: 'readers',
+      name: 'Laura Martínez',
+      affinity: '96%',
+      book: 'El infinito en un junco',
+      photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
+      lat: 40.0360,
+      lng: -3.5975,
+      state: 'Leyendo en Jardines del Príncipe'
     },
-    { 
-      id:'marcos', type:'user', x:66, y:68, label:'Marcos · 88%', 
-      status:'Leyendo en Librería Tipos Móviles', speed:'820 m · 10 min',
-      photo:USERS_DATA.marcos.photo, book:'1984'
+    {
+      id: 'marcos',
+      type: 'readers',
+      name: 'Marcos Silva',
+      affinity: '88%',
+      book: 'Cien años de soledad',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
+      lat: 40.0315,
+      lng: -3.6050,
+      state: 'En terraza de Calle Stuart'
     },
-    { 
-      id:'cafe1', type:'event', x:58, y:38, label:'Cita a Ciegas (Quedada)', 
-      status:'Café La Buena Vida · Sábado 18:30 h', desc:'Evento oficial con 4 plazas libres. ¡Ven con tu libro!',
-      photo:'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=150&q=80',
-      badge:'QUEDADA ACTIVA'
+    {
+      id: 'sofia',
+      type: 'readers',
+      name: 'Sofía',
+      affinity: '94%',
+      book: 'La sombra del viento',
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
+      lat: 40.0352,
+      lng: -3.6075,
+      state: 'Paseando por el Jardín de la Isla'
     },
-    { 
-      id:'cafe2', type:'event', x:26, y:62, label:'Club de Vino & Debate', 
-      status:'Vinoteca La Fisna · Jueves 20:00 h', desc:'Debate sobre finales literarios con vino tinto.',
-      photo:'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=150&q=80',
-      badge:'DEBATE NOCTURNO'
+    {
+      id: 'evento_aranjuez',
+      type: 'events',
+      name: 'Quedada Literaria: Paseo & Lectura',
+      venue: 'Plaza de Parejas (Palacio Real de Aranjuez)',
+      lat: 40.0368,
+      lng: -3.6088,
+      badge: 'QUEDADA ACTIVA',
+      icon: '🎟️'
     },
-    { 
-      id:'spot1', type:'spot', x:42, y:76, label:'Librería Mujeres & Compañía', 
-      status:'Librería independiente con rincón de lectura', desc:'Descuento 5% para usuarios Book Affinity.',
-      photo: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=150'
+    {
+      id: 'libreria_aranjuez',
+      type: 'spots',
+      name: 'Librería Concorde / Espacio Cultural',
+      venue: 'Calle de las Infantas, Aranjuez',
+      lat: 40.0322,
+      lng: -3.6028,
+      badge: 'LIBRERÍA',
+      icon: '📖'
     }
   ];
 
-  const filteredPins = allPins.filter(p => {
-    if(S.mapFilter === 'readers') return p.type === 'user';
-    if(S.mapFilter === 'events') return p.type === 'event';
-    if(S.mapFilter === 'spots') return p.type === 'spot';
-    return true;
-  });
+  puntosAranjuez
+    .filter(p => filter === 'all' || p.type === filter)
+    .forEach(p => {
+      let iconHtml = '';
 
-  const curPin = allPins.find(p => p.id === S.mapPin) || allPins[0];
-
-  document.getElementById('v-mapa').innerHTML = `
-    <div class="p-3 border-b flex flex-col gap-2 sticky top-0 z-20 shadow-sm" style="background:var(--surface); border-color:var(--line)">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-sm">
-            🧭
+      if (p.type === 'readers') {
+        iconHtml = `
+          <div style="position:relative; width:44px; height:44px; cursor:pointer;" class="transform hover:scale-110 transition duration-200">
+            <img src="${p.photo}" style="width:40px; height:40px; border-radius:50%; border:3px solid #be123c; box-shadow:0 4px 10px rgba(0,0,0,0.35); object-fit:cover;"/>
+            <span style="position:absolute; bottom:-4px; left:50%; transform:translateX(-50%); background:#be123c; color:#fff; font-size:9px; font-weight:800; padding:1px 5px; border-radius:9999px; white-space:nowrap; border:1px solid #fff;">
+              ${p.affinity}
+            </span>
           </div>
-          <div>
-            <span class="text-xs font-bold block leading-tight">Brújula Literaria · Madrid Centro</span>
-            <span class="text-[10px]" style="color:var(--muted)">Comunidad lectora, tertulias y librerías asociadas</span>
+        `;
+      } else {
+        const bgCol = p.type === 'events' ? '#d97706' : '#047857';
+        iconHtml = `
+          <div style="background:${bgCol}; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; border:3px solid #fff; box-shadow:0 4px 10px rgba(0,0,0,0.35); cursor:pointer;">
+            ${p.icon}
           </div>
-        </div>
-        <button onclick="recenterWazeMap()" class="chip text-[10px] py-1">🧭 Mi posición</button>
-      </div>
+        `;
+      }
 
-      <div class="flex gap-1.5 overflow-x-auto hide-sb">
-        <button onclick="setMapFilter('all')" class="chip ${S.mapFilter==='all'?'on':''}">Todos (7)</button>
-        <button onclick="setMapFilter('readers')" class="chip ${S.mapFilter==='readers'?'on':''}">👥 Lectoras (4)</button>
-        <button onclick="setMapFilter('events')" class="chip ${S.mapFilter==='events'?'on':''}">🎟️ Quedadas (2)</button>
-        <button onclick="setMapFilter('spots')" class="chip ${S.mapFilter==='spots'?'on':''}">📍 Librerías & Cafés (1)</button>
-      </div>
-    </div>
+      const customIcon = L.divIcon({
+        className: 'custom-leaflet-marker',
+        html: iconHtml,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22]
+      });
 
-    <div class="waze-map-wrapper relative">
-      <svg viewBox="0 0 500 470" class="w-full h-full pointer-events-none">
-        <rect x="20" y="30" width="110" height="90" rx="14" fill="#D2E3D4" opacity="0.6"/>
-        <rect x="170" y="40" width="140" height="110" rx="16" fill="#EAE3D9" opacity="0.7"/>
-        <rect x="340" y="30" width="130" height="130" rx="16" fill="#D2E3D4" opacity="0.6"/>
-        <rect x="40" y="190" width="120" height="130" rx="14" fill="#EAE3D9" opacity="0.7"/>
-        <rect x="210" y="210" width="120" height="140" rx="14" fill="#D2E3D4" opacity="0.5"/>
-        <rect x="360" y="230" width="110" height="120" rx="14" fill="#EAE3D9" opacity="0.7"/>
-        
-        <line x1="0" y1="165" x2="500" y2="165" class="waze-highway"/>
-        <line x1="160" y1="0" x2="160" y2="470" class="waze-road-main"/>
-        <line x1="330" y1="0" x2="330" y2="470" class="waze-road-main"/>
-        <line x1="0" y1="360" x2="500" y2="360" class="waze-road-main"/>
-        
-        <line x1="0" y1="80" x2="500" y2="80" class="waze-road-sec"/>
-        <line x1="0" y1="260" x2="500" y2="260" class="waze-road-sec"/>
-        <line x1="240" y1="0" x2="240" y2="470" class="waze-road-sec"/>
+      const marker = L.marker([p.lat, p.lng], { icon: customIcon }).addTo(mapMarkersGroup);
 
-        <text x="20" y="160" font-size="9" font-weight="bold" fill="#888">GRAN VÍA LITERARIA</text>
-        <text x="340" y="20" font-size="8" font-weight="bold" fill="#888">C/ CERVANTES</text>
-        <text x="20" y="355" font-size="8" font-weight="bold" fill="#888">PASEO DE LAS LETRAS</text>
-      </svg>
-
-      ${filteredPins.map(p => `
-        <div class="waze-pin" style="left:${p.x}%; top:${p.y}%;" onclick="selectWazePin('${p.id}')">
-          <div class="relative flex flex-col items-center">
-            ${p.isMe ? '<div class="waze-pulse"></div>' : ''}
-            <div class="w-11 h-11 rounded-full border-2 shadow-2xl p-0.5 transition-transform"
-                 style="background:var(--card); border-color:${p.isMe?'#00d2ff':(p.type==='event'?'#D4A03D':'var(--maroon)')};">
-              <img src="${p.photo}" class="w-full h-full rounded-full object-cover"/>
-            </div>
-            <div class="px-2 py-0.5 rounded-full text-[9px] font-extrabold mt-1 shadow-md whitespace-nowrap flex items-center gap-1"
-                 style="background:${p.type==='event'?'#D4A03D':(p.isMe?'#00d2ff':'#1B1816')}; color:${p.type==='event'||p.isMe?'#000':'#FFF'};">
-              <span>${p.label}</span>
-            </div>
-          </div>
-        </div>
-      `).join('')}
-
-      <div class="absolute top-3 right-3 bg-white/80 dark:bg-black/60 backdrop-blur-md rounded-full p-2 shadow-md">
-        <span class="text-xs font-black text-rose-800">N ↑</span>
-      </div>
-    </div>
-
-    <div class="p-4">
-      <div class="card p-4 space-y-3 shadow-lg border-2" style="border-color:${curPin.type==='event'?'#D4A03D':'var(--maroon)'}">
-        <div class="flex items-start justify-between">
-          <div class="flex items-center gap-3">
-            <img src="${curPin.photo}" class="w-12 h-12 rounded-2xl object-cover border-2 shadow-sm" style="border-color:${curPin.type==='event'?'#D4A03D':'var(--maroon)'}"/>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="font-bold text-sm leading-tight">${curPin.label}</h3>
-                ${curPin.badge ? `<span class="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900">${curPin.badge}</span>` : ''}
-              </div>
-              <p class="text-xs font-semibold mt-0.5" style="color:var(--maroon)">${curPin.status}</p>
-              <p class="text-[11px]" style="color:var(--muted)">${curPin.speed || curPin.desc || 'En tu radio de afinidad'}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="pt-1 flex gap-2">
-          ${curPin.type === 'event' ? `
-            <button class="btn flex-1 text-xs py-2.5 font-bold" onclick="bookEvent('${curPin.id}')">
-              ${S.eventsBooked[curPin.id] ? 'Apuntado ✓ (Cancelar)' : 'Reservar plaza en este evento'}
+      if (p.type === 'readers') {
+        marker.bindPopup(`
+          <div style="font-family:sans-serif; min-width:170px; padding:2px;">
+            <b style="font-size:13px; color:#1c1917;">${p.name}</b> · <span style="color:#be123c; font-weight:bold;">${p.affinity}</span><br>
+            <span style="font-size:11px; color:#57534e;">📖 ${p.book}</span><br>
+            <span style="font-size:10px; color:#78716c; display:block; margin-bottom:8px;">📍 ${p.state}</span>
+            <button onclick="comoLlegar(${p.lat}, ${p.lng}, '${p.name}')" 
+              style="width:100%; background:#2563eb; color:white; font-size:11px; font-weight:bold; padding:6px 10px; border-radius:8px; border:none; cursor:pointer;">
+              🚶 Cómo llegar (A pie)
             </button>
-            <button class="btn-ghost text-xs px-3" onclick="toast('Ruta en tiempo real calculada: 8 min a pie')">Cómo llegar</button>
-          ` : (curPin.isMe ? `
-            <button class="btn-ghost w-full text-xs py-2" onclick="toast('Tu estado se emite para lectoras en 1.5 km')">Transmitiendo estado en vivo 📡</button>
-          ` : `
-            <button class="btn flex-1 text-xs py-2.5 font-bold" onclick="openWhisper('${curPin.id}', 1, 142)">
-              Citarse aquí en directo ☕
+          </div>
+        `);
+      } else {
+        marker.bindPopup(`
+          <div style="font-family:sans-serif; min-width:170px; padding:2px;">
+            <b style="font-size:13px; color:#1c1917;">${p.name}</b><br>
+            <span style="font-size:11px; color:#78716c; display:block; margin-bottom:8px;">📍 ${p.venue}</span>
+            <button onclick="comoLlegar(${p.lat}, ${p.lng}, '${p.name}')" 
+              style="width:100%; background:#d97706; color:white; font-size:11px; font-weight:bold; padding:6px 10px; border-radius:8px; border:none; cursor:pointer;">
+              🚶 Cómo llegar al evento
             </button>
-            <button class="btn-ghost text-xs px-3" onclick="openChat('${curPin.id}')">Chat</button>
-          `)}
-        </div>
-      </div>
-    </div>`;
+          </div>
+        `);
+      }
+    });
 }
 
+// Función que detecta tu posición y pone tu avatar con pulso radar
+function autoLocateUser() {
+  if (!navigator.geolocation) return;
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      renderUserMarker(lat, lng);
+    },
+    (err) => {
+      // Si el GPS falla o está en escritorio, te situamos en un punto céntrico predeterminado
+      renderUserMarker(40.4168, -3.7038);
+    },
+    { enableHighAccuracy: false, timeout: 8000 }
+  );
+}
+
+function renderUserMarker(lat, lng) {
+  if (!leafletMapInstance) return;
+
+  const myPhoto = (typeof USERS_DATA !== 'undefined' && USERS_DATA.kurko && USERS_DATA.kurko.photo)
+    ? USERS_DATA.kurko.photo
+    : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80';
+
+  const userMarkerHtml = `
+    <div style="position:relative; width:48px; height:48px; cursor:pointer;">
+      <div style="position:absolute; inset:-4px; border-radius:50%; background:rgba(37,99,235,0.4); animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
+      <img src="${myPhoto}" style="position:relative; width:44px; height:44px; border-radius:50%; border:3px solid #2563eb; box-shadow:0 0 14px rgba(37,99,235,0.8); object-fit:cover; z-index:2;"/>
+      <span style="position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); background:#2563eb; color:#fff; font-size:9px; font-weight:800; padding:1px 6px; border-radius:9999px; white-space:nowrap; border:1px solid #fff; z-index:3;">
+        TÚ
+      </span>
+    </div>
+  `;
+
+  const userIcon = L.divIcon({
+    className: 'user-radar-avatar',
+    html: userMarkerHtml,
+    iconSize: [48, 48],
+    iconAnchor: [24, 24]
+  });
+
+  if (userMarkerInstance) {
+    userMarkerInstance.setLatLng([lat, lng]);
+  } else {
+    userMarkerInstance = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(leafletMapInstance);
+  }
+
+  userMarkerInstance.bindPopup("<b style='color:#1c1917;'>¡Tú (Kur-ko)!</b><br><span style='font-size:11px; color:#57534e;'>Leyendo Tokio Blues · Activo</span>");
+}
+
+function centerOnUserRealGPS() {
+  if (!navigator.geolocation) {
+    if (typeof toast === 'function') toast("Geolocalización no soportada.");
+    return;
+  }
+
+  if (typeof toast === 'function') toast("Localizando satélites GPS...");
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      if (leafletMapInstance) {
+        leafletMapInstance.setView([lat, lng], 15);
+        renderUserMarker(lat, lng);
+      }
+      if (typeof toast === 'function') toast("¡Ubicación actualizada con éxito!");
+    },
+    (err) => {
+      if (typeof toast === 'function') toast("No se pudo obtener la posición. Comprueba permisos.");
+    },
+    { enableHighAccuracy: false, timeout: 10000 }
+  );
+}
+
+function centerOnUserRealGPS() {
+  if (!navigator.geolocation) {
+    if (typeof toast === 'function') toast("Tu navegador no soporta geolocalización.");
+    else alert("Tu navegador no soporta geolocalización.");
+    return;
+  }
+
+  if (typeof toast === 'function') toast("Obteniendo satélites GPS...");
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      console.log("📍 Coordenadas reales:", lat, lng);
+
+      if (leafletMapInstance) {
+        leafletMapInstance.setView([lat, lng], 15);
+
+        if (userMarkerInstance) {
+          userMarkerInstance.setLatLng([lat, lng]);
+        } else {
+          const userIcon = L.divIcon({
+            className: 'user-gps-marker',
+            html: `<div style="background:#2563eb; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:15px; border:3px solid #ffffff; box-shadow:0 0 12px #3b82f6;">📍</div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
+          });
+          userMarkerInstance = L.marker([lat, lng], { icon: userIcon }).addTo(leafletMapInstance);
+        }
+
+        userMarkerInstance.bindPopup("<b>¡Estás aquí!</b><br>Ubicación GPS sincronizada").openPopup();
+      }
+
+      if (typeof toast === 'function') toast("¡Ubicación actualizada con éxito!");
+    },
+    (err) => {
+      console.error("Error GPS:", err);
+      if (typeof toast === 'function') toast("No se pudo obtener la posición. Revisa los permisos.");
+    },
+    { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 }
+  );
+}
+// ==============================================================================
+// 🚶 CÓMO LLEGAR CON INDICACIONES PASO A PASO
+// ==============================================================================
+function comoLlegar(destLat, destLng, destNombre) {
+  if (typeof toast === 'function') toast(`Calculando ruta hacia ${destNombre}...`);
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const oLat = pos.coords.latitude;
+        const oLng = pos.coords.longitude;
+        abrirRutaNavegacion(oLat, oLng, destLat, destLng);
+      },
+      (err) => {
+        abrirDestinoDirecto(destLat, destLng);
+      },
+      { timeout: 6000 }
+    );
+  } else {
+    abrirDestinoDirecto(destLat, destLng);
+  }
+}
+
+function abrirRutaNavegacion(oLat, oLng, dLat, dLng) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  let url = '';
+
+  if (isIOS) {
+    url = `https://maps.apple.com/?saddr=${oLat},${oLng}&daddr=${dLat},${dLng}&dirflg=w`;
+  } else {
+    url = `https://www.google.com/maps/dir/?api=1&origin=${oLat},${oLng}&destination=${dLat},${dLng}&travelmode=walking`;
+  }
+
+  window.open(url, '_blank');
+}
+
+function abrirDestinoDirecto(dLat, dLng) {
+  window.open(`https://www.google.com/maps/search/?api=1&query=${dLat},${dLng}`, '_blank');
+}
 function setMapFilter(f){
   S.mapFilter = f;
   renderMapa();
