@@ -556,10 +556,8 @@ body {
 <!-- =========================================================================
      💌 NOTA ADHESIVA DE SUSURRO LITERARIO (POST-IT AL MARGEN)
      ========================================================================= -->
-<div id="modal-whisper" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs hidden transition-opacity duration-300">
-  <div class="w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl space-y-4 border transform transition-transform duration-300 translate-y-full"
-    id="whisper-card"
-    style="background: var(--parchment, #FDF9F2); border-color: var(--gold, #D4A03D); color: #2C241E;">
+<di<div id="modal-whisper" class="hidden fixed inset-0 z-[99999] flex flex-col justify-end sm:justify-center items-center bg-black/60 backdrop-blur-sm" onclick="if(event.target===this)closeWhisperModal()">
+  <div id="whisper-card" class="w-full max-w-md max-h-[85dvh] overflow-y-auto rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl space-y-4 border pb-8" style="background: var(--parchment, #FDF9F2); border-color: var(--gold, #D4A03D); color: #2C241E;">
     
     <!-- Cabecera de la nota adhesiva -->
     <div class="flex items-center justify-between border-b pb-2.5" style="border-color: rgba(212, 160, 61, 0.3);">
@@ -3223,25 +3221,61 @@ async function publishUniversalContent(){
     }
 }
 let curWhisper = null;
-function openWhisper(userId, bookId, page){
-  const b = bookOf(bookId);
-  const u = THREADS[userId] || USERS_DATA[userId] || { name: 'Lector' };
-  curWhisper = { userId, bookId, page };
-  document.getElementById('wh-title').textContent = `Susurrar a ${u.name.split(' ')[0]}`;
-  document.getElementById('wh-sub').textContent = `Sobre ${b.t}${page?' · pág. '+page:''}`;
+function openWhisper(targetUser, bookId, quoteText) {
+  try {
+    // 1. Localizar el contenedor del modal de susurros
+    const whisperEl = document.getElementById('modal-whisper') || document.getElementById('whisper-modal');
+    if (!whisperEl) {
+      console.warn("No se encontró el elemento modal de susurros.");
+      return;
+    }
 
-  const ideas = [
-    `Me fascinó tu reflexión sobre ${b.t}. ¿Qué opinas?`,
-    `¿Te apetece un café para debatir este pasaje?`,
-    `Coincidimos plenamente en nuestra complicidad lectora.`
-  ];
-  document.getElementById('wh-chips').innerHTML = ideas.map(idea => `
-    <button class="chip text-[10px]" onclick="document.getElementById('wh-text').value='${idea}'">${idea}</button>
-  `).join('');
+    // 2. Moverlo al <body> si está dentro de un contenedor con overflow
+    if (whisperEl.parentElement !== document.body) {
+      document.body.appendChild(whisperEl);
+    }
 
-  document.getElementById('wh-text').value = '';
-  document.getElementById('modal-whisper').classList.remove('hidden');
+    // 3. Rellenar datos (destinatario, cita/pasaje y texto)
+    const targetEl = document.getElementById('whisper-recipient') || document.getElementById('whisper-target');
+    if (targetEl) {
+      const uName = (typeof USERS_DATA !== 'undefined' && USERS_DATA[targetUser]) 
+        ? USERS_DATA[targetUser].name 
+        : (targetUser === 'laura' ? 'Laura Martínez' : (targetUser || 'Lector afín'));
+      targetEl.textContent = `Susurrar a ${uName}...`;
+    }
+
+    // Buscar pasaje si existe contenedor para la cita
+    const passageEl = document.querySelector('#modal-whisper blockquote') || 
+                      document.querySelector('#modal-whisper .italic') || 
+                      document.getElementById('whisper-passage');
+    if (passageEl && quoteText) {
+      passageEl.textContent = `«${quoteText}»`;
+    }
+
+    const inputEl = document.getElementById('whisper-text') || 
+                    document.getElementById('whisper-input') || 
+                    document.querySelector('#modal-whisper textarea');
+    if (inputEl) {
+      inputEl.value = '';
+    }
+
+    // 4. Forzar despliegue y visibilidad a pantalla completa en móvil
+    whisperEl.classList.remove('hidden');
+    whisperEl.style.removeProperty('display');
+    whisperEl.style.setProperty('display', 'flex', 'important');
+    whisperEl.style.setProperty('position', 'fixed', 'important');
+    whisperEl.style.setProperty('inset', '0', 'important');
+    whisperEl.style.setProperty('z-index', '999999', 'important');
+    whisperEl.style.setProperty('background', 'rgba(0,0,0,0.65)', 'important');
+    whisperEl.style.setProperty('align-items', 'flex-end', 'important');
+    whisperEl.style.setProperty('justify-content', 'center', 'important');
+
+    console.log("Modal de susurros visible y centrado para móvil.");
+  } catch (err) {
+    console.error("Error en openWhisper:", err);
+  }
 }
+window.openWhisper = openWhisper;
 
 function closeWhisper(){
   document.getElementById('modal-whisper').classList.add('hidden');
