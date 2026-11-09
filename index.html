@@ -718,64 +718,11 @@ body {
   </div>
 
   <!-- MODAL DE DETALLE DE LIBRO (FILMAFFINITY) -->
-<div id="modal-book" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm transition-opacity">
-  <div class="w-full max-w-md max-h-[85vh] overflow-y-auto bg-[var(--surface)] text-[var(--ink)] rounded-t-[28px] sm:rounded-[28px] border border-[var(--line)] shadow-2xl p-5 space-y-4">
-    
-    <!-- Cabecera modal: Género y Botón cerrar -->
-    <div class="flex items-center justify-between border-b pb-3" style="border-color:var(--line)">
-      <span id="mb-genre" class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Literatura</span>
-      <button type="button" onclick="closeBookModal()" class="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--card)] border border-[var(--line)] text-stone-500 hover:text-stone-800 cursor-pointer text-sm font-bold">✕</button>
-    </div>
 
-    <!-- Título, Autor y Precio -->
-    <div>
-      <h2 id="mb-title" class="serif text-xl font-bold leading-tight">Título</h2>
-      <p id="mb-author" class="text-xs text-[var(--muted)] mt-0.5">Autor</p>
-      <div class="flex items-center gap-3 mt-2">
-        <span id="mb-price" class="text-xs font-bold text-amber-700 cursor-pointer hover:underline">12,95 €</span>
-        <span class="text-xs text-[var(--muted)]">·</span>
-        <span id="mb-votes" class="text-xs text-[var(--muted)]">1.240 lecturas evaluadas</span>
-      </div>
-    </div>
-
-    <!-- Puntuación Media y Tu Nota -->
-    <div class="flex items-center justify-between p-3 rounded-xl bg-[var(--card)] border border-[var(--line)]">
-      <div>
-        <span class="text-[10px] uppercase font-bold text-[var(--muted)]">Nota media</span>
-        <div id="mb-rating" class="serif text-2xl font-extrabold text-[var(--gold)]">★ 9.0</div>
-      </div>
-      <div class="text-right">
-        <span class="text-[10px] uppercase font-bold text-[var(--muted)]">Tu calificación</span>
-        <div id="mb-my-rating" class="text-sm font-bold text-[var(--maroon)]">Sin puntuar</div>
-      </div>
-    </div>
-
-    <!-- Histograma de notas (FilmAffinity) -->
-    <div>
-      <span class="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider block mb-1.5">Distribución de votos</span>
-      <div id="mb-bars" class="h-16 flex items-end gap-1.5 px-2 py-1 bg-[var(--card)] rounded-lg border border-[var(--line)]"></div>
-    </div>
-
-    <!-- Botonera 1 al 10 -->
-    <div>
-      <span class="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider block mb-1.5">Puntúa esta obra:</span>
-      <div id="mb-stars" class="flex gap-1 overflow-x-auto py-1"></div>
-    </div>
-
-    <!-- Sinopsis -->
-    <div>
-      <span class="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider block mb-1">Sinopsis</span>
-      <p id="mb-synopsis" class="text-xs leading-relaxed text-stone-600 dark:text-stone-300"></p>
-    </div>
-
-    <!-- Caja de complicidad Book Affair -->
-    <div id="mb-match-box" class="p-3 rounded-xl bg-[var(--card-subtle)] border border-[var(--line)] space-y-2 text-xs"></div>
-
-  </div>
 </div>
 
   <div id="toast"></div>
-</div>
+  
 
 <script>
 // ==========================================
@@ -789,8 +736,12 @@ window.sbClient = sbClient;
 // 📚 CONSUMO DE DATOS REALES (SUPABASE)
 // ==========================================
 async function fetchUserRatingsFromDB() {
-  const activeUser = (typeof S !== 'undefined' && S.user && S.user.name) ? S.user.name.toLowerCase() : 'kurko';
   try {
+    let activeUser = 'kurko';
+    if (typeof S !== 'undefined' && S.user) {
+      activeUser = (S.user.id || S.user.name || S.user.email || 'kurko').toLowerCase();
+    }
+
     const { data, error } = await sbClient
       .from('book_ratings')
       .select('book_id, rating')
@@ -804,15 +755,18 @@ async function fetchUserRatingsFromDB() {
     if (data && data.length > 0) {
       if (!S.myRatings) S.myRatings = {};
       data.forEach(row => {
-        S.myRatings[row.book_id] = row.rating;
+        const bId = parseInt(row.book_id, 10);
+        S.myRatings[bId] = row.rating;
+        S.myRatings[String(bId)] = row.rating;
       });
       console.log('Valoraciones del usuario cargadas desde Supabase:', S.myRatings);
-      if (document.getElementById('v-biblioteca')) renderBiblioteca();
+      if (typeof renderBiblioteca === 'function') renderBiblioteca();
     }
   } catch (err) {
     console.error('Fallo de red al consultar ratings:', err);
   }
 }
+window.fetchUserRatingsFromDB = fetchUserRatingsFromDB;
 async function fetchBooksFromDB() {
   try {
     const { data, error } = await sbClient
@@ -1733,11 +1687,26 @@ function renderBiblioteca(){
     </div>`;
 }
 
+// ==========================================
+// 📖 APERTURA DEL MODAL DE DETALLE Y VOTACIÓN
+// ==========================================
 function showBookDetail(id){
   try {
     console.log("-> Ejecutando showBookDetail con ID:", id);
     
-    // 1. Buscar el libro en BOOKS o en S.books tanto por ID numérico como por texto
+    const modalEl = document.getElementById('modal-book');
+    if (!modalEl) {
+      console.error("El elemento #modal-book no existe en el DOM.");
+      return;
+    }
+
+    // 🚀 PASO MAESTRO: Si está atrapado dentro de otro contenedor, moverlo al <body>
+    if (modalEl.parentElement !== document.body) {
+      document.body.appendChild(modalEl);
+      console.log("-> #modal-book movido con éxito a la raíz del <body>.");
+    }
+
+    // 1. Buscar el libro
     let b = null;
     if (typeof BOOKS !== 'undefined' && Array.isArray(BOOKS)) {
       b = BOOKS.find(x => String(x.id) === String(id)) || BOOKS.find(x => Number(x.id) === Number(id));
@@ -1748,34 +1717,31 @@ function showBookDetail(id){
     if (!b && typeof BOOKS !== 'undefined' && BOOKS.length > 0) {
       b = BOOKS[0];
     }
-    if (!b) {
-      console.error("No se pudo localizar el libro con ID:", id);
-      return;
-    }
+    if (!b) return;
 
     console.log("Libro encontrado:", b.t || b.title);
 
-    // 2. Asignación segura de textos con comprobación de existencia
-    const setSafeText = (elId, text) => {
-      const el = document.getElementById(elId);
-      if (el) el.textContent = text;
+    // 2. Asignar textos
+    const setTxt = (elemId, txt) => {
+      const el = document.getElementById(elemId);
+      if (el) el.textContent = txt;
     };
 
-    setSafeText('mb-genre', b.g || b.genre || 'Literatura');
-    setSafeText('mb-title', b.t || b.title || 'Sin título');
-    setSafeText('mb-author', b.a || b.author || 'Autor anónimo');
-    setSafeText('mb-rating', b.r || b.rating || '9.0');
-    setSafeText('mb-votes', `${Number(b.votes || 1240).toLocaleString()} lecturas evaluadas`);
-    setSafeText('mb-synopsis', b.synopsis || b.syn || 'Sin sinopsis disponible para esta obra.');
-    setSafeText('mb-price', b.price || '12,95 €');
+    setTxt('mb-genre', b.g || b.genre || 'Literatura');
+    setTxt('mb-title', b.t || b.title || 'Sin título');
+    setTxt('mb-author', b.a || b.author || 'Autor');
+    setTxt('mb-rating', b.r || b.rating || '9.0');
+    setTxt('mb-votes', `${Number(b.votes || 1240).toLocaleString()} lecturas evaluadas`);
+    setTxt('mb-synopsis', b.synopsis || b.syn || 'Sin sinopsis disponible para esta obra.');
+    setTxt('mb-price', b.price || '12,95 €');
 
-    // 3. Valoración del usuario actual
+    // 3. Voto previo del usuario
     const myVote = (typeof S !== 'undefined' && S.myRatings) 
       ? (S.myRatings[b.id] || S.myRatings[Number(b.id)] || S.myRatings[String(b.id)]) 
       : null;
-    setSafeText('mb-my-rating', myVote ? `★ ${myVote}/10` : 'Sin puntuar');
+    setTxt('mb-my-rating', myVote ? `★ ${myVote}/10` : 'Sin puntuar');
 
-    // 4. Histograma de notas (distribución segura de 10 barras)
+    // 4. Histograma
     const dist = (Array.isArray(b.dist) && b.dist.length === 10) 
       ? b.dist 
       : [2, 1, 3, 5, 8, 12, 20, 25, 18, 6];
@@ -1793,7 +1759,7 @@ function showBookDetail(id){
       }).join('');
     }
 
-    // 5. Botonera de notas 1 al 10
+    // 5. Botonera del 1 al 10 interactiva
     const starsEl = document.getElementById('mb-stars');
     if (starsEl) {
       starsEl.innerHTML = Array.from({length:10}, (_, i) => i+1).map(n => `
@@ -1804,20 +1770,82 @@ function showBookDetail(id){
       `).join('');
     }
 
-    // 6. Desplegar el modal eliminando la clase hidden
-    const modalEl = document.getElementById('modal-book');
-    if (modalEl) {
-      modalEl.classList.remove('hidden');
-      modalEl.style.display = 'flex'; // <-- Añade esta línea
-      modalEl.style.zIndex = '9999';   // <-- Añade esta línea
-      console.log("Modal abierto con éxito.");
-    } else {
-      console.error("El elemento con id 'modal-book' no existe en el DOM.");
-    }
+    // 6. FORZAR VISIBILIDAD DIRECTA EN PANTALLA
+    modalEl.classList.remove('hidden');
+    modalEl.style.removeProperty('display');
+    modalEl.style.setProperty('display', 'flex', 'important');
+    modalEl.style.setProperty('position', 'fixed', 'important');
+    modalEl.style.setProperty('inset', '0', 'important');
+    modalEl.style.setProperty('z-index', '999999', 'important');
+    modalEl.style.setProperty('background', 'rgba(0,0,0,0.7)', 'important');
+
+    console.log("Modal desplegado en primer plano.");
   } catch (err) {
-    console.error("Excepción dentro de showBookDetail:", err);
+    console.error("Excepción en showBookDetail:", err);
   }
 }
+window.showBookDetail = showBookDetail;
+
+function closeBookModal(){
+  const modalEl = document.getElementById('modal-book');
+  if (modalEl) {
+    modalEl.classList.add('hidden');
+    modalEl.style.setProperty('display', 'none', 'important');
+  }
+}
+window.closeBookModal = closeBookModal;
+window.showBookDetail = showBookDetail;
+
+function closeBookModal(){
+  const modalEl = document.getElementById('modal-book');
+  if (modalEl) {
+    modalEl.classList.add('hidden');
+    modalEl.style.display = 'none';
+  }
+}
+window.closeBookModal = closeBookModal;
+
+// ==========================================
+// ⭐ VOTACIÓN PERSISTENTE EN SUPABASE
+// ==========================================
+async function rateBook(bookId, score) {
+  try {
+    const numericBookId = parseInt(bookId, 10);
+    const numericScore = parseInt(score, 10);
+    
+    let activeUser = 'kurko';
+    if (typeof S !== 'undefined' && S.user) {
+      activeUser = (S.user.id || S.user.name || S.user.email || 'kurko').toLowerCase();
+    }
+
+    console.log(`-> Votando libro ID ${numericBookId} con nota ${numericScore} (Usuario: ${activeUser})`);
+
+    // Actualización optimista local
+    if (!S.myRatings) S.myRatings = {};
+    S.myRatings[numericBookId] = numericScore;
+    S.myRatings[String(numericBookId)] = numericScore;
+
+    if (typeof toast === 'function') toast(`Has calificado con ${numericScore}/10.`);
+
+    // Refrescar modal y tarjeta
+    showBookDetail(numericBookId);
+    if (typeof renderBiblioteca === 'function') renderBiblioteca();
+
+    // Guardar en Supabase
+    if (typeof sbClient !== 'undefined') {
+      const { data, error } = await sbClient
+        .from('book_ratings')
+        .upsert(
+          { user_id: activeUser, book_id: numericBookId, rating: numericScore },
+          { onConflict: 'user_id,book_id' }
+        );
+      if (error) console.error('Error Supabase rating:', error.message);
+    }
+  } catch (err) {
+    console.error('Error en rateBook:', err);
+  }
+}
+window.rateBook = rateBook;
 window.showBookDetail = showBookDetail;
 
 function buyBookAction(partner){
@@ -1832,33 +1860,54 @@ function closeBookModal(){
   }
 }
 
-async function rateBook(bookId, score){
-  const activeUser = (typeof S !== 'undefined' && S.user && S.user.name) ? S.user.name.toLowerCase() : 'kurko';
-
-  // 1. Actualización inmediata en pantalla (optimista)
-  S.myRatings[bookId] = score;
-  toast(`Has calificado con ${score}/10.`);
-  showBookDetail(bookId);
-  renderBiblioteca();
-
-  // 2. Persistencia en Supabase mediante UPSERT
+async function rateBook(bookId, score) {
   try {
-    const { data, error } = await sbClient
-      .from('book_ratings')
-      .upsert(
-        { user_id: activeUser, book_id: bookId, rating: score },
-        { onConflict: 'user_id,book_id' }
-      );
+    const numericBookId = parseInt(bookId, 10);
+    const numericScore = parseInt(score, 10);
+    
+    // 1. Obtener el usuario activo real autenticado
+    let activeUser = 'kurko';
+    if (typeof S !== 'undefined' && S.user) {
+      activeUser = (S.user.id || S.user.name || S.user.email || 'kurko').toLowerCase();
+    }
 
-    if (error) {
-      console.error('Error al guardar calificación en Supabase:', error.message);
-    } else {
-      console.log(`Calificación ${score}/10 guardada para libro ${bookId} en Supabase`);
+    console.log(`-> Votando libro ID ${numericBookId} con nota ${numericScore} (Usuario: ${activeUser})`);
+
+    // 2. Actualización optimista inmediata en memoria local
+    if (!S.myRatings) S.myRatings = {};
+    S.myRatings[numericBookId] = numericScore;
+    S.myRatings[String(numericBookId)] = numericScore;
+
+    if (typeof toast === 'function') toast(`Has calificado con ${numericScore}/10.`);
+
+    // 3. Refrescar visualmente la pantalla
+    if (typeof showBookDetail === 'function') showBookDetail(numericBookId);
+    if (typeof renderBiblioteca === 'function') renderBiblioteca();
+
+    // 4. Guardar en Supabase (UPSERT)
+    if (typeof sbClient !== 'undefined') {
+      const { data, error } = await sbClient
+        .from('book_ratings')
+        .upsert(
+          { 
+            user_id: activeUser, 
+            book_id: numericBookId, 
+            rating: numericScore 
+          },
+          { onConflict: 'user_id,book_id' }
+        );
+
+      if (error) {
+        console.error('Error al guardar calificación en Supabase:', error.message);
+      } else {
+        console.log(`Calificación ${numericScore}/10 persistida con éxito en Supabase.`);
+      }
     }
   } catch (err) {
-    console.error('Fallo de conexión al calificar libro:', err);
+    console.error('Excepción en rateBook:', err);
   }
 }
+window.rateBook = rateBook;
 // ==============================================================================
 // 🧭 GEOLOCALIZACIÓN REAL DEL DISPOSITIVO (GPS + Supabase)
 // ==============================================================================
@@ -3659,5 +3708,61 @@ function openBuyBook(title, author) {
 }
 window.openBuyBook = openBuyBook;
 </script>
+<div id="modal-book" class="hidden fixed inset-0 z-[9999] flex flex-col justify-end bg-black/60 backdrop-blur-sm" style="display:none;" onclick="if(event.target===this)closeBookModal()">
+  <div class="w-full max-w-md max-h-[85vh] overflow-y-auto bg-[var(--surface)] text-[var(--ink)] rounded-t-[28px] sm:rounded-[28px] border border-[var(--line)] shadow-2xl p-5 space-y-4">
+    
+    <!-- Cabecera modal: Género y Botón cerrar -->
+    <div class="flex items-center justify-between border-b pb-3" style="border-color:var(--line)">
+      <span id="mb-genre" class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Literatura</span>
+      <button type="button" onclick="closeBookModal()" class="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--card)] border border-[var(--line)] text-stone-500 hover:text-stone-800 cursor-pointer text-sm font-bold">✕</button>
+    </div>
+
+    <!-- Título, Autor y Precio -->
+    <div>
+      <h2 id="mb-title" class="serif text-xl font-bold leading-tight">Título</h2>
+      <p id="mb-author" class="text-xs text-[var(--muted)] mt-0.5">Autor</p>
+      <div class="flex items-center gap-3 mt-2">
+        <span id="mb-price" class="text-xs font-bold text-amber-700 cursor-pointer hover:underline">12,95 €</span>
+        <span class="text-xs text-[var(--muted)]">·</span>
+        <span id="mb-votes" class="text-xs text-[var(--muted)]">1.240 lecturas evaluadas</span>
+      </div>
+    </div>
+
+  
+    <!-- Puntuación Media y Tu Nota -->
+    <div class="flex items-center justify-between p-3 rounded-xl bg-[var(--card)] border border-[var(--line)]">
+      <div>
+        <span class="text-[10px] uppercase font-bold text-[var(--muted)]">Nota media</span>
+        <div id="mb-rating" class="serif text-2xl font-extrabold text-[var(--gold)]">★ 9.0</div>
+      </div>
+      <div class="text-right">
+        <span class="text-[10px] uppercase font-bold text-[var(--muted)]">Tu calificación</span>
+        <div id="mb-my-rating" class="text-sm font-bold text-[var(--maroon)]">Sin puntuar</div>
+      </div>
+    </div>
+
+    <!-- Histograma de notas (FilmAffinity) -->
+    <div>
+      <span class="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider block mb-1.5">Distribución de votos</span>
+      <div id="mb-bars" class="h-16 flex items-end gap-1.5 px-2 py-1 bg-[var(--card)] rounded-lg border border-[var(--line)]"></div>
+    </div>
+
+    <!-- Botonera 1 al 10 -->
+    <div>
+      <span class="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider block mb-1.5">Puntúa esta obra:</span>
+      <div id="mb-stars" class="flex gap-1 overflow-x-auto py-1"></div>
+    </div>
+
+    <!-- Sinopsis -->
+    <div>
+      <span class="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider block mb-1">Sinopsis</span>
+      <p id="mb-synopsis" class="text-xs leading-relaxed text-stone-600 dark:text-stone-300"></p>
+    </div>
+
+    <!-- Caja de complicidad Book Affair -->
+    <div id="mb-match-box" class="p-3 rounded-xl bg-[var(--card-subtle)] border border-[var(--line)] space-y-2 text-xs"></div>
+
+  </div>
+</div>
 </body>
 </html>
