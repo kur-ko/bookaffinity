@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Book Affinity - Comunidad, Citas Literarias y Radar Cultural</title>
+<title>Book Affair - Comunidad, Citas Literarias y Radar Cultural</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
@@ -448,7 +448,7 @@ body {
       <div class="w-full max-w-sm space-y-6">
         <div class="text-center space-y-2">
           <div class="w-16 h-16 mx-auto bg-rose-900 rounded-full flex items-center justify-center text-3xl mb-4 shadow-lg border border-rose-800">📖</div>
-          <h2 class="serif text-3xl font-bold">Book Affinity</h2>
+          <h2 class="serif text-3xl font-bold">Book Affair</h2>
           <p class="text-sm text-stone-400">Tu comunidad literaria te espera.</p>
         </div>
         
@@ -500,7 +500,7 @@ body {
         <path d="M57 54 C66 50, 75 42, 80 32 C73 37, 65 44, 57 48 Z" fill="#FFA07A"/>
       </svg>
       <div>
-        <span class="serif text-lg font-bold tracking-tight block leading-tight text-stone-900 dark:text-stone-100">book affinity</span>
+        <span class="serif text-lg font-bold tracking-tight block leading-tight text-stone-900 dark:text-stone-100">book affair</span>
         <span class="text-[9px] font-extrabold tracking-widest uppercase text-amber-700 dark:text-amber-400 block">Dating & Cultural Matching</span>
       </div>
     </div>
@@ -553,7 +553,59 @@ body {
     <button class="nav-btn" data-tab="mapa" onclick="go('mapa')"></button>
     <button class="nav-btn" data-tab="quiz" onclick="go('quiz')"></button>
   </nav>
+<!-- =========================================================================
+     💌 NOTA ADHESIVA DE SUSURRO LITERARIO (POST-IT AL MARGEN)
+     ========================================================================= -->
+<div id="modal-whisper" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs hidden transition-opacity duration-300">
+  <div class="w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl space-y-4 border transform transition-transform duration-300 translate-y-full"
+    id="whisper-card"
+    style="background: var(--parchment, #FDF9F2); border-color: var(--gold, #D4A03D); color: #2C241E;">
+    
+    <!-- Cabecera de la nota adhesiva -->
+    <div class="flex items-center justify-between border-b pb-2.5" style="border-color: rgba(212, 160, 61, 0.3);">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">✒️</span>
+        <div>
+          <h3 class="serif text-sm font-bold text-stone-900 leading-tight" id="whisper-recipient">Susurrar a...</h3>
+          <span class="text-[10px] text-stone-500 font-medium">Nota privada al margen de lectura</span>
+        </div>
+      </div>
+      <button type="button" onclick="closeWhisperModal()" class="w-7 h-7 rounded-full flex items-center justify-center text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 transition text-sm">
+        ✕
+      </button>
+    </div>
 
+    <!-- Cita original como contexto (bloqueada, en cursiva editorial) -->
+    <div class="p-3 rounded-xl border border-dashed text-xs leading-relaxed" 
+      style="background: rgba(212, 160, 61, 0.08); border-color: rgba(212, 160, 61, 0.35); color: #4A3E31;">
+      <span class="text-[10px] uppercase font-bold tracking-wider block mb-1" style="color: var(--maroon, #8A1C2E);">Sobre este pasaje:</span>
+      <p id="whisper-quote-context" class="italic serif">«...»</p>
+    </div>
+
+    <!-- Área de texto manuscrita y libre -->
+    <div class="space-y-1">
+      <textarea id="whisper-text" rows="3"
+        placeholder="Escribe aquí tu pensamiento, confidencia o afinidad sobre estas líneas..."
+        class="w-full p-3 text-xs leading-relaxed rounded-xl border outline-none resize-none transition bg-white/80 focus:bg-white text-stone-800 focus:border-amber-700 shadow-inner"
+        style="border-color: rgba(212, 160, 61, 0.4);"></textarea>
+    </div>
+
+    <!-- Botonera de envío -->
+    <div class="flex items-center justify-between pt-1">
+      <button type="button" onclick="closeWhisperModal()" class="px-3 py-1.5 text-xs text-stone-500 hover:text-stone-800 font-medium transition">
+        Descartar
+      </button>
+
+      <button type="button" onclick="sendWhisperMessage()" 
+        class="px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md flex items-center gap-1.5 transition active:scale-95"
+        style="background: linear-gradient(135deg, #A11B35, #781024);">
+        <span>Enviar susurro</span>
+        <span>💌</span>
+      </button>
+    </div>
+
+  </div>
+</div>
   <!-- COMPOSER UNIVERSAL -->
   <div id="modal-composer" class="absolute inset-0 hidden z-50 flex items-end" style="background:rgba(0,0,0,0.65);" onclick="if(event.target===this)closeComposer()">
     <div class="w-full rounded-t-3xl p-5 space-y-4 pop max-h-[94%] overflow-y-auto hide-sb" style="background:var(--surface); border-top:1px solid var(--line);">
@@ -665,71 +717,62 @@ body {
     </div>
   </div>
 
-  <!-- MODAL LIBRO CON SINOPSIS Y COMPRA -->
-  <div id="modal-book" class="absolute inset-0 hidden z-50 flex flex-col justify-end" style="background:rgba(0,0,0,0.65);" onclick="if(event.target===this)closeBookModal()">
-    <div class="w-full max-h-[92%] overflow-y-auto hide-sb rounded-t-3xl p-5 space-y-4 pop" style="background:var(--surface); border-top:1px solid var(--line);">
-      <div class="flex items-start justify-between">
-        <div>
-          <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style="background:var(--accent-soft);color:var(--accent)" id="mb-genre"></span>
-          <h2 class="serif text-xl font-bold mt-1" id="mb-title"></h2>
-          <p class="text-xs font-medium" style="color:var(--muted)" id="mb-author"></p>
-        </div>
-        <button class="icon-btn" onclick="closeBookModal()">✕</button>
-      </div>
-
-      <div class="card p-4 space-y-2">
-        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Sinopsis de la obra</h4>
-        <p class="text-xs leading-relaxed text-stone-700 dark:text-stone-300 italic" id="mb-synopsis"></p>
-      </div>
-
-      <div class="card p-4 space-y-2.5 bg-gradient-to-br from-amber-50 to-stone-50 dark:from-stone-900 dark:to-stone-800 border-amber-200 dark:border-stone-700">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-400 flex items-center gap-1.5">
-            🛒 Conseguir ejemplar oficial
-          </span>
-          <span class="text-xs font-extrabold text-stone-900 dark:text-white" id="mb-price">18,90 €</span>
-        </div>
-        <p class="text-[10px]" style="color:var(--muted)">Apoya al ecosistema comprando en nuestras librerías asociadas o en tu comercio de barrio.</p>
-        <div class="grid grid-cols-2 gap-2 pt-1">
-          <button class="btn bg-amber-800 hover:bg-amber-900 text-xs py-2" onclick="buyBookAction('Casa del Libro')">
-            Casa del Libro →
-          </button>
-          <button class="btn-ghost text-xs py-2 text-center" onclick="buyBookAction('Librería de Barrio (TodosTusLibros)')">
-            Librería de Barrio 📍
-          </button>
-        </div>
-      </div>
-
-      <div class="card p-4 space-y-3" style="background:var(--card)">
-        <div class="flex items-center justify-between border-b pb-3" style="border-color:var(--line)">
-          <div>
-            <div class="text-xs uppercase font-bold" style="color:var(--muted)">Media Book Affinity</div>
-            <div class="text-3xl font-extrabold serif flex items-center gap-1.5" style="color:var(--gold)">
-              ★ <span id="mb-rating">--</span><span class="text-xs font-normal" style="color:var(--muted)">/10</span>
-            </div>
-            <div class="text-[10px]" style="color:var(--muted)" id="mb-votes">votos computados</div>
-          </div>
-          <div class="text-right">
-            <div class="text-xs uppercase font-bold" style="color:var(--maroon)">Tu nota</div>
-            <div class="text-2xl font-bold" id="mb-my-rating">Sin votar</div>
-          </div>
-        </div>
-        <div>
-          <p class="text-[10px] font-bold uppercase tracking-wider mb-1.5" style="color:var(--muted)">Histograma de valoraciones</p>
-          <div class="flex items-end gap-1 h-16 w-full pt-2" id="mb-bars"></div>
-          <div class="flex justify-between text-[9px] font-bold mt-1 px-0.5" style="color:var(--muted)">
-            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <p class="text-xs font-semibold mb-1.5">Puntúa este libro para afinar tu algoritmo:</p>
-        <div class="flex justify-between gap-1" id="mb-stars"></div>
-      </div>
-      <div id="mb-match-box" class="card p-3 text-xs space-y-1" style="background:var(--maroon-soft); border-color:transparent"></div>
+  <!-- MODAL DE DETALLE DE LIBRO (FILMAFFINITY) -->
+<div id="modal-book" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm transition-opacity">
+  <div class="w-full max-w-md max-h-[85vh] overflow-y-auto bg-[var(--surface)] text-[var(--ink)] rounded-t-[28px] sm:rounded-[28px] border border-[var(--line)] shadow-2xl p-5 space-y-4">
+    
+    <!-- Cabecera modal: Género y Botón cerrar -->
+    <div class="flex items-center justify-between border-b pb-3" style="border-color:var(--line)">
+      <span id="mb-genre" class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Literatura</span>
+      <button type="button" onclick="closeBookModal()" class="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--card)] border border-[var(--line)] text-stone-500 hover:text-stone-800 cursor-pointer text-sm font-bold">✕</button>
     </div>
+
+    <!-- Título, Autor y Precio -->
+    <div>
+      <h2 id="mb-title" class="serif text-xl font-bold leading-tight">Título</h2>
+      <p id="mb-author" class="text-xs text-[var(--muted)] mt-0.5">Autor</p>
+      <div class="flex items-center gap-3 mt-2">
+        <span id="mb-price" class="text-xs font-bold text-amber-700 cursor-pointer hover:underline">12,95 €</span>
+        <span class="text-xs text-[var(--muted)]">·</span>
+        <span id="mb-votes" class="text-xs text-[var(--muted)]">1.240 lecturas evaluadas</span>
+      </div>
+    </div>
+
+    <!-- Puntuación Media y Tu Nota -->
+    <div class="flex items-center justify-between p-3 rounded-xl bg-[var(--card)] border border-[var(--line)]">
+      <div>
+        <span class="text-[10px] uppercase font-bold text-[var(--muted)]">Nota media</span>
+        <div id="mb-rating" class="serif text-2xl font-extrabold text-[var(--gold)]">★ 9.0</div>
+      </div>
+      <div class="text-right">
+        <span class="text-[10px] uppercase font-bold text-[var(--muted)]">Tu calificación</span>
+        <div id="mb-my-rating" class="text-sm font-bold text-[var(--maroon)]">Sin puntuar</div>
+      </div>
+    </div>
+
+    <!-- Histograma de notas (FilmAffinity) -->
+    <div>
+      <span class="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider block mb-1.5">Distribución de votos</span>
+      <div id="mb-bars" class="h-16 flex items-end gap-1.5 px-2 py-1 bg-[var(--card)] rounded-lg border border-[var(--line)]"></div>
+    </div>
+
+    <!-- Botonera 1 al 10 -->
+    <div>
+      <span class="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider block mb-1.5">Puntúa esta obra:</span>
+      <div id="mb-stars" class="flex gap-1 overflow-x-auto py-1"></div>
+    </div>
+
+    <!-- Sinopsis -->
+    <div>
+      <span class="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider block mb-1">Sinopsis</span>
+      <p id="mb-synopsis" class="text-xs leading-relaxed text-stone-600 dark:text-stone-300"></p>
+    </div>
+
+    <!-- Caja de complicidad Book Affair -->
+    <div id="mb-match-box" class="p-3 rounded-xl bg-[var(--card-subtle)] border border-[var(--line)] space-y-2 text-xs"></div>
+
   </div>
+</div>
 
   <div id="toast"></div>
 </div>
@@ -977,11 +1020,16 @@ async function reservarPlazaEvento() {
 
 // Cargar automáticamente los datos al iniciar la página
 window.addEventListener('DOMContentLoaded', () => {
-    checkSession(); // <-- Candado de seguridad: comprueba si hay usuario activo
+    // ☀️ Forzar modo diurno por defecto
+    document.documentElement.classList.remove('dark');
+    if (typeof S !== 'undefined') S.dark = false;
+    const themeBtn = document.getElementById('theme-btn');
+    if (themeBtn && typeof ic === 'function') themeBtn.innerHTML = ic('moon', 'w-4 h-4');
+
     fetchBooksFromDB();
     fetchEventsFromDB();
     fetchFeedFromDB();
-    fetchUserRatingsFromDB(); 
+    // ... el resto de tus llamadas
 });
 /* ICONOGRAFÍA SVG */
 const I = {
@@ -1049,11 +1097,11 @@ const BOOKS = [
 
 let FEED_ITEMS = [
   {
-    type: 'event', postId: 'ev-1', id: 'ev-1', badge: 'Quedada Oficial Book Affinity',
+    type: 'event', postId: 'ev-1', id: 'ev-1', badge: 'Quedada Oficial Book Affair',
     title: 'Cita a Ciegas con Libro Envuelto', date: 'Este Sábado · 18:30 h', venue: 'Café La Buena Vida (Plaza de Oriente)',
     desc: 'Llevas tu novela favorita envuelta en papel kraft con 3 adjetivos escritos a mano. El algoritmo empareja las mesas según tu afinidad lectora.',
     spotsLeft: 4, img: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=700&q=80',
-    organizer: 'Equipo Book Affinity'
+    organizer: 'Equipo Book Affair'
   },
   {
     type: 'quote', postId: 'p-1', id: 'laura', book: 1, page: 142, place: 'Café La Central (Callao)',
@@ -1202,7 +1250,7 @@ const S = {
 FEED_ITEMS.forEach(p => { if(p.likes) S.likes[p.postId] = p.likes; });
 REELS.forEach(r => S.likes[r.id] = r.likes);
 
-const bookOf = id => BOOKS.find(b => b.id === Number(id)) || BOOKS[0];
+const bookOf = id => BOOKS.find(b => String(b.id) === String(id)) || BOOKS.find(b => Number(b.id) === Number(id)) || BOOKS[0];
 const pctRead = () => Math.round(S.user.page / 384 * 100);
 
 function toast(m){
@@ -1372,7 +1420,7 @@ function renderInicio(){
               <span class="text-[10px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full ticket-badge flex items-center gap-1">
                 🎟️ EVENTO PRESENCIAL & QUEDADA
               </span>
-              <span class="text-[10px] font-extrabold text-amber-700 dark:text-amber-400">Verificado Book Affinity</span>
+              <span class="text-[10px] font-extrabold text-amber-700 dark:text-amber-400">Verificado Book Affair</span>
             </div>
 
             <div class="event-ticket-card p-4 space-y-3">
@@ -1424,7 +1472,12 @@ function renderInicio(){
                   <p class="text-[10px]" style="color:var(--muted)">📖 Subrayado personal · ${item.place} · ${item.time}</p>
                 </div>
               </div>
-              <button class="chip text-[10px]" onclick="showBookDetail(${b.id})">★ ${b.r} · Comprar</button>
+              <button type="button" 
+  onclick="event.stopPropagation(); openBuyBook('${(b && b.t ? b.t : (item.book_title || item.title || 'Cien años de soledad')).replace(/'/g, "\\'")}', '${(b && b.a ? b.a : '').replace(/'/g, "\\'")}')" 
+  class="btn text-xs font-bold flex items-center gap-1 cursor-pointer hover:opacity-90">
+  <span>★ ${item.rating || (b && b.r) || '9.6'} · Comprar</span>
+  <span class="text-[10px]">↗</span>
+</button>
             </div>
 
             <div class="note-moleskine-card p-4 space-y-2.5">
@@ -1450,15 +1503,37 @@ function renderInicio(){
                 <button class="flex items-center gap-1 text-xs font-bold" onclick="likePost('${item.postId}')" style="color:${isLiked?'var(--rose)':'var(--muted)'}">
                   ${ic('heart','w-4 h-4',!!isLiked)} <span>${likesCount}</span>
                 </button>
-                <button class="flex items-center gap-1 text-xs font-bold" style="color:var(--muted)" onclick="openChat('${item.id==='kurko'?'laura':item.id}')">
-                  ${ic('msg','w-4 h-4')} Responder nota
-                </button>
+<button class="flex items-center gap-1.5 text-xs text-stone-500 hover:text-rose-900 transition font-medium" 
+  onclick="togglePublicThread('${item.postId || item.id}')">
+  ${ic('msg','w-3.5 h-3.5')}
+  <span>Anotar al margen</span>
+  <span class="text-[10px] bg-stone-200 dark:bg-stone-800 px-1.5 py-0.5 rounded-full font-bold ml-0.5" id="count-comments-${item.postId || item.id}">
+  ${(window.PUBLIC_COMMENTS && window.PUBLIC_COMMENTS[item.postId || item.id]) ? window.PUBLIC_COMMENTS[item.postId || item.id].length : 0}
+</span>
+</button>
               </div>
               <button class="btn text-xs" onclick="openWhisper('${item.id==='kurko'?'laura':item.id}', ${b.id}, ${item.page||0})">
                 ${ic('spark','w-3.5 h-3.5')} Susurrar a la cita
               </button>
             </div>
-          </article>`;
+            </div>
+    <!-- Hilo público de debate (Anotaciones al margen) -->
+    <div id="thread-box-${item.postId || item.id}" class="hidden mt-3 pt-3 border-t border-stone-200 dark:border-stone-800 space-y-2.5">
+      <div id="thread-comments-${item.postId || item.id}" class="space-y-2 text-xs"></div>
+      
+      <div class="flex items-center gap-2 pt-1">
+        <input type="text" id="thread-input-${item.postId || item.id}"
+          placeholder="Suma tu anotación al margen sobre este pasaje..." 
+          class="flex-1 px-3 py-1.5 text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 outline-none focus:border-rose-800"
+          onkeydown="if(event.key==='Enter') postPublicComment('${item.postId || item.id}')">
+        
+        <button onclick="postPublicComment('${item.postId || item.id}')"
+          class="px-3.5 py-1.5 bg-rose-900 hover:bg-rose-800 text-white text-xs font-bold rounded-xl transition shrink-0 shadow-sm">
+          Publicar
+        </button>
+      </div>
+    </div>
+  </article>`;
       } else if(item.type === 'photo'){
         const b = bookOf(item.book);
         const t = THREADS[item.id] || USERS_DATA[item.id] || { name: item.author || 'Lector', photo: S.user.photo, af: 94 };
@@ -1600,7 +1675,7 @@ function renderBiblioteca(){
 
   const filters = [
     ['all','Todos los fondos'],
-    ['top','Top Book Affinity (★ 9+)'],
+    ['top','Top Book Affair (★ 9+)'],
     ['ficción','Ficción'],
     ['cuentos','Cuentos'],
     ['realismo','Realismo Mágico'],
@@ -1646,9 +1721,10 @@ function renderBiblioteca(){
               <p class="text-[11px] line-clamp-2 mt-1 text-stone-600 dark:text-stone-400 leading-snug">${b.synopsis}</p>
             </div>
             <div class="flex items-center justify-between pt-2 border-t mt-2" style="border-color:var(--line)">
-              <span class="text-[10px] font-bold text-amber-700">Comprar: ${b.price}</span>
-              <span class="text-[10px] font-bold" style="color:${myVote?'var(--maroon)':'var(--muted)'}">
-                ${myVote ? 'Tu nota: ★ ' + myVote : 'Ver sinopsis y votar →'}
+              <button type="button" onclick="event.stopPropagation(); openBuyBook('${(b.t || '').replace(/'/g, "\\'")}', '${(b.a || '').replace(/'/g, "\\'")}')" class="text-[10px] font-bold text-amber-700 hover:underline cursor-pointer flex items-center gap-1">🛒 Comprar: ${b.price} ↗</button>
+<button type="button" onclick="event.stopPropagation(); showBookDetail('${b.id}')" class="text-[10px] font-bold cursor-pointer hover:underline" style="color:${myVote ? 'var(--maroon)' : 'var(--muted)'}">
+  ${myVote ? 'Tu nota: ★ ' + myVote : 'Ver sinopsis y votar →'}
+</button>
               </span>
             </div>
           </div>
@@ -1658,76 +1734,102 @@ function renderBiblioteca(){
 }
 
 function showBookDetail(id){
-  const b = bookOf(id);
-  if (!b) return;
+  try {
+    console.log("-> Ejecutando showBookDetail con ID:", id);
+    
+    // 1. Buscar el libro en BOOKS o en S.books tanto por ID numérico como por texto
+    let b = null;
+    if (typeof BOOKS !== 'undefined' && Array.isArray(BOOKS)) {
+      b = BOOKS.find(x => String(x.id) === String(id)) || BOOKS.find(x => Number(x.id) === Number(id));
+    }
+    if (!b && typeof S !== 'undefined' && Array.isArray(S.books)) {
+      b = S.books.find(x => String(x.id) === String(id));
+    }
+    if (!b && typeof BOOKS !== 'undefined' && BOOKS.length > 0) {
+      b = BOOKS[0];
+    }
+    if (!b) {
+      console.error("No se pudo localizar el libro con ID:", id);
+      return;
+    }
 
-  // Fallback seguro: si el libro de la base de datos no trae distribución, asignamos una por defecto
-  const dist = (Array.isArray(b.dist) && b.dist.length === 10) 
-    ? b.dist 
-    : [2, 1, 3, 5, 8, 12, 20, 25, 18, 6];
+    console.log("Libro encontrado:", b.t || b.title);
 
-  const totalVotes = b.votes !== undefined ? b.votes : 1240;
+    // 2. Asignación segura de textos con comprobación de existencia
+    const setSafeText = (elId, text) => {
+      const el = document.getElementById(elId);
+      if (el) el.textContent = text;
+    };
 
-  document.getElementById('mb-genre').textContent = b.g || 'Literatura';
-  document.getElementById('mb-title').textContent = b.t || 'Sin título';
-  document.getElementById('mb-author').textContent = b.a || 'Autor anónimo';
-  document.getElementById('mb-rating').textContent = b.r || '9.0';
-  document.getElementById('mb-votes').textContent = `${Number(totalVotes).toLocaleString()} lecturas evaluadas`;
-  document.getElementById('mb-synopsis').textContent = b.synopsis || 'Sin sinopsis disponible.';
-  document.getElementById('mb-price').textContent = b.price || '12,95 €';
+    setSafeText('mb-genre', b.g || b.genre || 'Literatura');
+    setSafeText('mb-title', b.t || b.title || 'Sin título');
+    setSafeText('mb-author', b.a || b.author || 'Autor anónimo');
+    setSafeText('mb-rating', b.r || b.rating || '9.0');
+    setSafeText('mb-votes', `${Number(b.votes || 1240).toLocaleString()} lecturas evaluadas`);
+    setSafeText('mb-synopsis', b.synopsis || b.syn || 'Sin sinopsis disponible para esta obra.');
+    setSafeText('mb-price', b.price || '12,95 €');
 
-  const myVote = (typeof S !== 'undefined' && S.myRatings) ? S.myRatings[b.id] : null;
-  document.getElementById('mb-my-rating').textContent = myVote ? `★ ${myVote}/10` : 'Sin puntuar';
+    // 3. Valoración del usuario actual
+    const myVote = (typeof S !== 'undefined' && S.myRatings) 
+      ? (S.myRatings[b.id] || S.myRatings[Number(b.id)] || S.myRatings[String(b.id)]) 
+      : null;
+    setSafeText('mb-my-rating', myVote ? `★ ${myVote}/10` : 'Sin puntuar');
 
-  // Usamos el array seguro 'dist' en lugar de 'b.dist'
-  const maxPct = Math.max(...dist, 1);
-  const barsEl = document.getElementById('mb-bars');
-  if (barsEl) {
-    barsEl.innerHTML = dist.map((pct, idx) => {
-      const h = Math.round((pct / maxPct) * 100);
-      const isMyRating = myVote === (idx + 1);
-      return `
-        <div class="flex-1 flex flex-col items-center h-full justify-end group">
-          <div class="w-full rounded-t transition-all duration-300"
-            style="height:${h}%; background:${isMyRating ? 'var(--maroon)' : (idx >= 7 ? 'var(--gold)' : 'var(--line)')}"></div>
-        </div>`;
-    }).join('');
-  }
+    // 4. Histograma de notas (distribución segura de 10 barras)
+    const dist = (Array.isArray(b.dist) && b.dist.length === 10) 
+      ? b.dist 
+      : [2, 1, 3, 5, 8, 12, 20, 25, 18, 6];
+    const maxPct = Math.max(...dist, 1);
+    const barsEl = document.getElementById('mb-bars');
+    if (barsEl) {
+      barsEl.innerHTML = dist.map((pct, idx) => {
+        const h = Math.round((pct / maxPct) * 100);
+        const isMyRating = myVote === (idx + 1);
+        return `
+          <div class="flex-1 flex flex-col items-center h-full justify-end group">
+            <div class="w-full rounded-t transition-all duration-300"
+              style="height:${h}%; background:${isMyRating ? 'var(--maroon)' : (idx >= 7 ? 'var(--gold)' : 'var(--line)')}"></div>
+          </div>`;
+      }).join('');
+    }
 
-  const starsEl = document.getElementById('mb-stars');
-  if (starsEl) {
-    starsEl.innerHTML = Array.from({length:10}, (_, i) => i+1).map(n => `
-      <button onclick="rateBook(${b.id}, ${n})" class="flex-1 py-1.5 rounded text-xs font-bold border transition"
-        style="background:${myVote === n ? 'var(--maroon)' : 'var(--card)'}; color:${myVote === n ? '#fff' : 'var(--ink)'}; border-color:${myVote === n ? 'var(--maroon)' : 'var(--line)'}">
-        ${n}
-      </button>
-    `).join('');
-  }
+    // 5. Botonera de notas 1 al 10
+    const starsEl = document.getElementById('mb-stars');
+    if (starsEl) {
+      starsEl.innerHTML = Array.from({length:10}, (_, i) => i+1).map(n => `
+        <button type="button" onclick="rateBook('${b.id}', ${n})" class="flex-1 py-1.5 rounded text-xs font-bold border transition cursor-pointer"
+          style="background:${myVote === n ? 'var(--maroon)' : 'var(--card)'}; color:${myVote === n ? '#fff' : 'var(--ink)'}; border-color:${myVote === n ? 'var(--maroon)' : 'var(--line)'}">
+          ${n}
+        </button>
+      `).join('');
+    }
 
-  const matchBox = document.getElementById('mb-match-box');
-  if (matchBox) {
-    matchBox.innerHTML = `
-      <div class="font-bold flex items-center gap-1.5" style="color:var(--maroon)">
-        ${ic('spark','w-4 h-4')} Conexión de complicidad Book Affinity
-      </div>
-      <p>A perfiles lectores afines de tu radar les fascina esta obra. ¡Coméntala para romper el hielo!</p>
-      <div class="pt-1">
-        <button class="btn w-full" onclick="closeBookModal(); openWhisper('laura', ${b.id}, null)">Susurrar a alguien sobre este libro</button>
-      </div>`;
-  }
-
-  const modalEl = document.getElementById('modal-book');
-  if (modalEl) {
-    modalEl.classList.remove('hidden');
+    // 6. Desplegar el modal eliminando la clase hidden
+    const modalEl = document.getElementById('modal-book');
+    if (modalEl) {
+      modalEl.classList.remove('hidden');
+      modalEl.style.display = 'flex'; // <-- Añade esta línea
+      modalEl.style.zIndex = '9999';   // <-- Añade esta línea
+      console.log("Modal abierto con éxito.");
+    } else {
+      console.error("El elemento con id 'modal-book' no existe en el DOM.");
+    }
+  } catch (err) {
+    console.error("Excepción dentro de showBookDetail:", err);
   }
 }
+window.showBookDetail = showBookDetail;
 
 function buyBookAction(partner){
   toast(`Redirigiendo a ${partner} (enlace patrocinado) 📖`);
 }
 
 function closeBookModal(){
-  document.getElementById('modal-book').classList.add('hidden');
+  const modalEl = document.getElementById('modal-book');
+  if (modalEl) {
+    modalEl.classList.add('hidden');
+    modalEl.style.display = 'none'; // <-- Añade esta línea
+  }
 }
 
 async function rateBook(bookId, score){
@@ -2317,7 +2419,7 @@ function renderQuiz(){
             <div>
               <h3 class="serif text-2xl font-bold">¿Quién es tu complicidad lectora?</h3>
               <p class="text-xs mt-2 leading-relaxed" style="color:var(--muted)">
-                En Book Affinity los subrayados y los hábitos de lectura revelan más sobre la afinidad que cualquier pose.
+                En Book Affair los subrayados y los hábitos de lectura revelan más sobre la afinidad que cualquier pose.
               </p>
             </div>
 
@@ -3096,25 +3198,72 @@ function closeWhisper(){
   document.getElementById('modal-whisper').classList.add('hidden');
 }
 
-function sendWhisper(){
-  const txt = document.getElementById('wh-text').value.trim();
-  if(!txt){ toast('Escribe un mensaje para conectar'); return; }
-  const { userId, bookId, page } = curWhisper;
-  const b = bookOf(bookId);
-  if(!THREADS[userId]) {
-    const u = USERS_DATA[userId] || { name:'Lector', photo:USERS_DATA.laura.photo, af:90 };
-    THREADS[userId] = { name: u.name, photo: u.photo, af: u.af, hook: b.t, msgs: [] };
-  }
-  THREADS[userId].msgs.push({
-    me: true,
-    t: `📖 Cita de ${b.t}${page?' (pág. '+page+')':''}: "${txt}"`,
-    time: now()
-  });
-  closeWhisper();
-  toast('¡Susurro enviado con éxito! Abriendo chat...');
-  openChat(userId);
-}
+function sendWhisperMessage() {
+  const txtEl = document.getElementById('whisper-text');
+  const txt = txtEl ? txtEl.value.trim() : '';
 
+  if (!txt) {
+    if (typeof toast === 'function') toast('Escribe unas palabras antes de enviar tu susurro ✒️');
+    return;
+  }
+
+  // 1. Identificar la clave del hilo en THREADS (marcos o laura)
+  const isMarcos = currentWhisperUserKey === 'marcos' || 
+                   (currentWhisperUserName && currentWhisperUserName.toLowerCase().includes('marcos'));
+  const targetKey = isMarcos ? 'marcos' : 'laura';
+
+  const myUserName = (typeof S !== 'undefined' && S.user && S.user.name) ? S.user.name : 'Kur-ko';
+  const whisperFormatted = `✨ [Susurro]: "${txt}"`;
+
+  // 2. Objeto omnicompatible: cubre todos los nombres de campos de texto y alineación
+  const msgObj = {
+    // Campos de texto para evitar 'undefined'
+    text: whisperFormatted,
+    m: whisperFormatted,
+    msg: whisperFormatted,
+    content: whisperFormatted,
+    body: whisperFormatted,
+
+    // Banderas de alineación para ubicar la burbuja a la DERECHA
+    mine: true,
+    isMe: true,
+    me: true,
+    from: 'me',
+    sender: 'me',
+    user: (typeof S !== 'undefined' && S.user && S.user.id) ? S.user.id : 'kurko',
+    userName: myUserName,
+    time: 'Ahora'
+  };
+
+  // 3. Inserción en la estructura de datos local (THREADS)
+  if (typeof THREADS !== 'undefined') {
+    if (!THREADS[targetKey]) {
+      THREADS[targetKey] = [];
+    }
+    
+    if (Array.isArray(THREADS[targetKey])) {
+      THREADS[targetKey].push(msgObj);
+    } else if (THREADS[targetKey].msgs && Array.isArray(THREADS[targetKey].msgs)) {
+      THREADS[targetKey].msgs.push(msgObj);
+    }
+  }
+
+  // 4. Cerrar la nota adhesiva
+  closeWhisperModal();
+
+  if (typeof toast === 'function') {
+    toast(`¡Susurro entregado a ${currentWhisperUserName || 'la persona lectora'}! 💌`);
+  }
+
+  // 5. Abrir la pantalla del chat con el usuario destino y redibujar
+  if (typeof openWhisper === 'function') {
+    openWhisper(targetKey, 1, null);
+  } else if (typeof openChat === 'function') {
+    openChat(targetKey);
+  } else if (typeof go === 'function') {
+    go('mensajes');
+  }
+}
 let activeRackWord = '';
 function addRackLetter(l){
   activeRackWord += l;
@@ -3316,7 +3465,199 @@ async function checkSession() {
     // Si no hay sesión, mostramos la pantalla de login de forma forzosa
     if (authModal) authModal.classList.remove('hidden');
   }
+}// =========================================================================
+// 💌 LÓGICA DE SUSURRO DIRECTO A CONVERSACIÓN
+// =========================================================================
+let currentWhisperUserKey = 'marcos';
+let currentWhisperUserName = 'Marcos Ruiz';
+
+function launchWhisper(targetKeyOrName, quoteText) {
+  // Identificar si es Marcos o Laura
+  const str = String(targetKeyOrName || '').toLowerCase();
+  if (str.includes('laura')) {
+    currentWhisperUserKey = 'laura';
+    currentWhisperUserName = 'Laura Martínez';
+  } else {
+    currentWhisperUserKey = 'marcos';
+    currentWhisperUserName = 'Marcos Ruiz';
+  }
+
+  const modal = document.getElementById('modal-whisper');
+  const card = document.getElementById('whisper-card');
+  const recEl = document.getElementById('whisper-recipient');
+  const qEl = document.getElementById('whisper-quote-context');
+  const txtEl = document.getElementById('whisper-text');
+
+  if (!modal || !card) return;
+
+  if (recEl) recEl.textContent = `Susurrar a ${currentWhisperUserName}`;
+  if (qEl) qEl.textContent = quoteText ? `«${quoteText}»` : '«Pasaje destacado de la lectura»';
+  if (txtEl) {
+    txtEl.value = '';
+  }
+
+  modal.classList.remove('hidden');
+  setTimeout(() => {
+    card.classList.remove('translate-y-full');
+    if (txtEl) txtEl.focus();
+  }, 20);
 }
+
+function closeWhisperModal() {
+  const modal = document.getElementById('modal-whisper');
+  const card = document.getElementById('whisper-card');
+  if (!modal || !card) return;
+
+  card.classList.add('translate-y-full');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 250);
+}
+
+function sendWhisperMessage() {
+  const txtEl = document.getElementById('whisper-text');
+  const txt = txtEl ? txtEl.value.trim() : '';
+
+  if (!txt) {
+    if (typeof toast === 'function') toast('Escribe unas palabras antes de enviar tu susurro ✒️');
+    return;
+  }
+
+  // 1. Identificar el destinatario ('marcos' o 'laura')
+  const isMarcos = currentWhisperUserKey === 'marcos' || 
+                   (currentWhisperUserName && currentWhisperUserName.toLowerCase().includes('marcos'));
+  const targetId = isMarcos ? 'marcos' : 'laura';
+
+  const whisperText = `✨ [Susurro]: "${txt}"`;
+
+  // 2. Insertar en THREADS usando la propiedad exacta 't' y 'me: true'
+  if (typeof pushMsg === 'function') {
+    // Si existe pushMsg, gestiona la inserción y el refresco automáticamente
+    pushMsg(targetId, { me: true, t: whisperText });
+  } else if (typeof THREADS !== 'undefined' && THREADS[targetId]) {
+    if (!THREADS[targetId].msgs) THREADS[targetId].msgs = [];
+    THREADS[targetId].msgs.push({
+      me: true,
+      t: whisperText,
+      time: 'Ahora'
+    });
+  }
+
+  // 3. Cerrar la nota adhesiva
+  closeWhisperModal();
+
+  if (typeof toast === 'function') {
+    toast(`¡Susurro entregado a ${currentWhisperUserName || 'la persona lectora'}! 💌`);
+  }
+
+  // 4. Abrir la pantalla de chat directa con Marcos o Laura
+  if (typeof openChat === 'function') {
+    openChat(targetId);
+  } else {
+    if (typeof S !== 'undefined') S.active = targetId;
+    if (typeof go === 'function') go('mensajes');
+    if (typeof renderMensajes === 'function') renderMensajes();
+  }
+}
+// =========================================================================
+// 💬 HILOS PÚBLICOS EN EL MURO (ANOTAR AL MARGEN)
+// =========================================================================
+window.PUBLIC_COMMENTS = window.PUBLIC_COMMENTS || {};
+
+function togglePublicThread(postId) {
+  const targetId = String(postId || 'default');
+  const box = document.getElementById(`thread-box-${targetId}`);
+  if (!box) {
+    console.warn('No se encontró el contenedor de hilo:', `thread-box-${targetId}`);
+    return;
+  }
+
+  box.classList.toggle('hidden');
+  if (!box.classList.contains('hidden')) {
+    renderPublicComments(targetId);
+    const input = document.getElementById(`thread-input-${targetId}`);
+    if (input) input.focus();
+  }
+}
+
+function renderPublicComments(postId) {
+  const container = document.getElementById(`thread-comments-${postId}`);
+  if (!container) return;
+
+  const list = window.PUBLIC_COMMENTS[postId] || [];
+  if (list.length === 0) {
+    container.innerHTML = `<p class="text-[11px] text-stone-400 italic py-1">Sé la primera persona en dejar una anotación al margen.</p>`;
+    return;
+  }
+
+  container.innerHTML = list.map(c => `
+    <div class="p-2.5 rounded-xl bg-stone-100 dark:bg-stone-850 border border-stone-200 dark:border-stone-750 flex items-start gap-2">
+      <div class="w-6 h-6 rounded-full bg-rose-950 text-rose-200 border border-rose-800 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+        ${(c.author || 'L').charAt(0).toUpperCase()}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-[11px] text-stone-900 dark:text-stone-200">${c.author}</span>
+          <span class="text-[9px] text-stone-400">${c.time}</span>
+        </div>
+        <p class="text-xs text-stone-700 dark:text-stone-300 mt-0.5 leading-relaxed">${c.text}</p>
+        
+        <!-- Botón sutil para apostillar/replicar -->
+        <div class="flex justify-end pt-1">
+          <button type="button" 
+            onclick="replyToComment('${postId}', '${c.author.replace(/'/g, "\\'")}')" 
+            class="text-[10px] font-semibold text-rose-800 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1 transition">
+            <span>Apostillar</span>
+            <span>↩</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function postPublicComment(postId) {
+  const targetId = String(postId || 'default');
+  const input = document.getElementById(`thread-input-${targetId}`);
+  const txt = input ? input.value.trim() : '';
+  if (!txt) return;
+
+  const myName = (typeof S !== 'undefined' && S.user && S.user.name) ? S.user.name : 'Kur-ko';
+
+  if (!window.PUBLIC_COMMENTS[targetId]) window.PUBLIC_COMMENTS[targetId] = [];
+  window.PUBLIC_COMMENTS[targetId].push({
+    author: myName,
+    text: txt,
+    time: 'Ahora'
+  });
+
+  input.value = '';
+  renderPublicComments(targetId);
+}
+  function replyToComment(postId, targetAuthor) {
+  const targetId = String(postId || 'default');
+  const input = document.getElementById(`thread-input-${targetId}`);
+  if (!input) return;
+
+  // Inserta la mención y coloca el cursor justo al final para escribir
+  input.value = `@${targetAuthor} `;
+  input.focus();
+  input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+  const countBadge = document.getElementById(`count-comments-${targetId}`);
+  if (countBadge) countBadge.textContent = window.PUBLIC_COMMENTS[targetId].length;
+
+  if (typeof toast === 'function') toast('Anotación compartida en el muro 🖋️');
+// =========================================================================
+// 🛒 ENLACE DE COMPRA REAL DE LIBROS (TODOS TUS LIBROS)
+// =========================================================================
+function openBuyBook(title, author) {
+  const query = encodeURIComponent((title || '').trim());
+  const storeUrl = `https://www.todostuslibros.com/busqueda/libros?titulo=${query}`;
+  window.open(storeUrl, '_blank', 'noopener,noreferrer');
+}
+window.openBuyBook = openBuyBook;
 </script>
 </body>
 </html>
