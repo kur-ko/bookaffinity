@@ -556,7 +556,7 @@ body {
 <!-- =========================================================================
      💌 NOTA ADHESIVA DE SUSURRO LITERARIO (POST-IT AL MARGEN)
      ========================================================================= -->
-<di<div id="modal-whisper" class="hidden fixed inset-0 z-[99999] flex flex-col justify-end sm:justify-center items-center bg-black/60 backdrop-blur-sm" onclick="if(event.target===this)closeWhisperModal()">
+<div id="modal-whisper" class="hidden fixed inset-0 z-[99999] flex flex-col justify-end sm:justify-center items-center bg-black/60 backdrop-blur-sm" onclick="if(event.target===this)closeWhisperModal()">
   <div id="whisper-card" class="w-full max-w-md max-h-[85dvh] overflow-y-auto rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl space-y-4 border pb-8" style="background: var(--parchment, #FDF9F2); border-color: var(--gold, #D4A03D); color: #2C241E;">
     
     <!-- Cabecera de la nota adhesiva -->
@@ -568,9 +568,9 @@ body {
           <span class="text-[10px] text-stone-500 font-medium">Nota privada al margen de lectura</span>
         </div>
       </div>
-      <button type="button" onclick="closeWhisperModal()" class="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer">
-      ✕
-      </button>
+    <button type="button" onclick="closeWhisperModal()" class="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer">
+     ✕
+    </button>
     </div>
 
     <!-- Cita original como contexto (bloqueada, en cursiva editorial) -->
@@ -590,9 +590,9 @@ body {
 
     <!-- Botonera de envío -->
     <div class="flex items-center justify-between pt-1">
-      <button type="button" onclick="closeWhisperModal()" class="px-3 py-1.5 text-xs text-stone-500 hover:text-stone-800 font-medium transition">
-        Descartar
-      </button>
+    <button type="button" onclick="closeWhisperModal()" class="text-xs font-bold text-stone-500 hover:text-stone-800 cursor-pointer">
+      Descartar
+    </button>
 
       <button type="button" onclick="sendWhisperMessage()" 
         class="px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md flex items-center gap-1.5 transition active:scale-95"
@@ -3295,9 +3295,13 @@ function closeWhisperModal() {
     cardEl.style.setProperty('display', 'none', 'important');
   }
 }
-window.closeWhisperModal = closeWhisperModal;
+function closeWhisperModal() {
+  const whisperEl = document.getElementById('modal-whisper') || document.getElementById('whisper-modal');
+  if (whisperEl) {
+    whisperEl.classList.add('hidden');
+    whisperEl.style.setProperty('display', 'none', 'important');
+  }
 
-  // Ocultar también la tarjeta interior por si quedó fuera del flujo
   const cardEl = document.getElementById('whisper-card');
   if (cardEl) {
     cardEl.style.setProperty('display', 'none', 'important');
@@ -3310,11 +3314,6 @@ function closeWhisper() {
 }
 window.closeWhisper = closeWhisper;
 
-// Alias de seguridad por si en algún botón se llama a closeWhisper()
-function closeWhisper() {
-  closeWhisperModal();
-}
-window.closeWhisper = closeWhisper;
 
 function sendWhisperMessage() {
   const txtEl = document.getElementById('whisper-text');
@@ -3622,15 +3621,27 @@ function launchWhisper(targetKeyOrName, quoteText) {
 }
 
 function closeWhisperModal() {
-  const modal = document.getElementById('modal-whisper');
-  const card = document.getElementById('whisper-card');
-  if (!modal || !card) return;
+  // 1. Localizar contenedor oscuro exterior
+  const whisperEl = document.getElementById('modal-whisper') || document.getElementById('whisper-modal');
+  if (whisperEl) {
+    whisperEl.classList.add('hidden');
+    whisperEl.style.removeProperty('display');
+    whisperEl.style.setProperty('display', 'none', 'important');
+  }
 
-  card.classList.add('translate-y-full');
-  setTimeout(() => {
-    modal.classList.add('hidden');
-  }, 250);
+  // 2. Localizar tarjeta interior (Post-it / recuadro)
+  const cardEl = document.getElementById('whisper-card') || document.querySelector('#modal-whisper > div');
+  if (cardEl) {
+    cardEl.style.removeProperty('display');
+    cardEl.style.setProperty('display', 'none', 'important');
+  }
 }
+window.closeWhisperModal = closeWhisperModal;
+
+function closeWhisper() {
+  closeWhisperModal();
+}
+window.closeWhisper = closeWhisper;
 
 function sendWhisperMessage() {
   const txtEl = document.getElementById('whisper-text');
