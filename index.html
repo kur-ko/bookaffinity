@@ -3251,7 +3251,7 @@ function openWhisper(targetUser, bookId, quoteText) {
     if (passageEl && quoteText) {
       passageEl.textContent = `«${quoteText}»`;
     }
-
+// 4. Resetear campo de texto
     const inputEl = document.getElementById('whisper-text') || 
                     document.getElementById('whisper-input') || 
                     document.querySelector('#modal-whisper textarea');
@@ -3259,7 +3259,14 @@ function openWhisper(targetUser, bookId, quoteText) {
       inputEl.value = '';
     }
 
-    // 4. Forzar despliegue y visibilidad a pantalla completa en móvil
+    // 5. Asegurar que la tarjeta interior esté activa
+    const cardEl = document.getElementById('whisper-card');
+    if (cardEl) {
+      cardEl.style.removeProperty('display');
+      cardEl.style.setProperty('display', 'block', 'important');
+    }
+
+    // 6. Forzar despliegue y visibilidad a pantalla completa en móvil
     whisperEl.classList.remove('hidden');
     whisperEl.style.removeProperty('display');
     whisperEl.style.setProperty('display', 'flex', 'important');
@@ -3283,8 +3290,25 @@ function closeWhisperModal() {
     whisperEl.classList.add('hidden');
     whisperEl.style.setProperty('display', 'none', 'important');
   }
+  const cardEl = document.getElementById('whisper-card');
+  if (cardEl) {
+    cardEl.style.setProperty('display', 'none', 'important');
+  }
 }
 window.closeWhisperModal = closeWhisperModal;
+
+  // Ocultar también la tarjeta interior por si quedó fuera del flujo
+  const cardEl = document.getElementById('whisper-card');
+  if (cardEl) {
+    cardEl.style.setProperty('display', 'none', 'important');
+  }
+}
+window.closeWhisperModal = closeWhisperModal;
+
+function closeWhisper() {
+  closeWhisperModal();
+}
+window.closeWhisper = closeWhisper;
 
 // Alias de seguridad por si en algún botón se llama a closeWhisper()
 function closeWhisper() {
